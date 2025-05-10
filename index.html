@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Albums & EPs</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin:0; padding:0; background-color:#1a1a1a; color:#fff; display:flex; justify-content:center; align-items:center; min-height:100vh; }
+        .album-container, .ep-container { display:flex; flex-direction:column; gap:20px; align-items:center; width:100%; }
+        .album-row, .ep-row { display:flex; gap:20px; flex-wrap:wrap; justify-content:center; width:100%; }
+        h2 { margin:20px 0 10px; color:#00ffcc; }
+        .divider { width:80%; height:2px; background-color:#555; margin:20px 0; }
+        .album, .ep-card { width:150px; height:150px; background-color:#333; border-radius:5px; position:relative; cursor:pointer; }
+        .album:hover::after, .ep-card:hover::after { content:''; position:absolute; top:-5px; left:-5px; right:-5px; bottom:-5px; border:2px solid #00ffcc; border-radius:5px; animation:glow 1s infinite alternate; }
+        @keyframes glow { from { box-shadow:0 0 10px #00ffcc; } to { box-shadow:0 0 20px #00ffcc; } }
+        .album img, .ep-card img { width:100%; height:100%; object-fit:cover; border-radius:5px; }
+        .black-and-white img { filter:grayscale(100%); transition:filter 0.3s ease-in-out; }
+        .black-and-white:hover img { filter:grayscale(0%); }
+        .album-page { display:none; flex-direction:column; align-items:center; text-align:center; padding:20px; background-color:rgba(34,34,34,0.65); width:100%; height:100vh; position:fixed; top:0; left:0; z-index:1000; overflow-y:auto; }
+        .album-page.active { display:flex; }
+        .album-info {
+            margin-top: 20px;
+            max-width: 600px;
+            line-height: 1.6;
+            word-wrap: break-word;
+            text-align: left;
+            background-color: rgba(0, 0, 0, 0.4);
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .buy-button, .gallery-button, .back-button { margin-top:30px; padding:10px 20px; border:none; border-radius:5px; font-weight:bold; cursor:pointer; transition:background-color 0.3s; }
+        .buy-button { background-color:#00ffcc; color:#000; }
+        .buy-button:hover { background-color:#009988; }
+        .gallery-button, .back-button { background-color:#555; color:#fff; }
+        .gallery-button:hover, .back-button:hover { background-color:#777; }
+        .gallery-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.9); justify-content:center; align-items:center; z-index:2000; }
+        .gallery-modal.active { display:flex; }
+        .album-cover-container {
+            position: absolute;
+            bottom: 80px; /* pushes it higher from the bottom */
+            left: 60px;   /* give a bit more left spacing */
+            z-index: 1;
+        }
+        
+        .album-cover {
+            width: 280px;
+            height: auto;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+        
+        .gallery-modal .back-button {
+               position: absolute;
+               top: 20px;
+               left: 20px;
+               z-index: 2100;
+           }
+        .gallery-image-container { position:relative; max-width:80%; max-height:80%; text-align:center; }
+        .gallery-image { max-width:100%; max-height:100%; display:block; margin:auto; object-fit:contain; }
+        .gallery-text {
+            position: absolute;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.6);
+            padding: 5px 10px;
+            border-radius: 5px;
+            color: #fff;
+            z-index: 1200;   /* ensure it sits above the image */
+        }
+        .gallery-controls { position:absolute; width:100%; display:flex; justify-content:space-between; top:50%; transform:translateY(-50%); }
+        .gallery-button-nav, .gallery-close { background-color:#444; color:white; padding:10px; border-radius:5px; cursor:pointer; }
+        .gallery-button-nav:hover, .gallery-close:hover { background-color:#666; }
+        #particles-js { position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1; }
+        .hidden { display:none; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js"></script>
+</head>
+<body>
+    <div id="particles-js"></div>
+    <div class="album-container" id="album-container">
+        <h2>Albums</h2>
+        <div class="album-row">
+            <div class="album" onclick="openAlbumPage('album1','sand')"><img src="album1-cover.jpg" alt="Sleep"></div>
+            <div class="album" onclick="openAlbumPage('album2','distort')"><img src="album2-cover.jpg" alt="Radioactive Noise"></div>
+            <div class="album" onclick="openAlbumPage('album3','caustic')"><img src="album3-cover.jpg" alt="Forgotten Oil Rigs"></div>
+        </div>
+        <div class="divider"></div>
+        <div class="album-row">
+            <div class="album black-and-white" onclick="openAlbumPage('album4','none')"><img src="album4-cover.jpg" alt="The Atrium"></div>
+            <div class="album black-and-white" onclick="openAlbumPage('album5','none')"><img src="album5-cover.jpg" alt="Forgotten Oil Rigs 2: Eternal Sands"></div>
+        </div>
+        <div class="divider"></div>
+        <h2>EPs</h2>
+        <div class="ep-row">
+            <div class="ep-card" onclick="openAlbumPage('ep1','sand')"><img src="ep-roads-of-oil-cover.jpg" alt="Roads of Oil"></div>
+        </div>
+    </div>
+
+    <!-- Album Pages -->
+    <div id="album1" class="album-page">
+        <h1>Sleep</h1>
+        <p class="album-info">Sleep was created 2010–2011 through long nights of insomnia. Rad experimented with reamping guitars and sampling choirs, mastered overnight with Spencer Roberts, released October 7, 2011, with photography by Mike Cuffe.</p>
+        <a href="https://ryanwall.bandcamp.com/album/sleep-2" class="buy-button" target="_blank">Buy on Bandcamp</a>
+        <button class="gallery-button" onclick="openGalleryModal('gallery1')">Photo Gallery</button>
+        <button class="back-button" onclick="closeAlbumPage('album1')">Back</button>
+        <div class="album-cover-container">
+                <img src="album1-cover.jpg" alt="Sleep Cover" class="album-cover">
+            </div>
+        </div>
+    </div>
+    <div id="album2" class="album-page">
+        <h1>Radioactive Noise</h1>
+        <p class="album-info">Radioactive Noise, inspired by Chornobyl, follows an orphaned girl and the Spray Paint Prince in a post-apocalyptic world, recorded 2013–2015, released August 1, 2015, mastered by Max Karon with photography by Mike Cuffe.</p>
+        <a href="https://ryanwall.bandcamp.com/album/radioactive-noise" class="buy-button" target="_blank">Buy on Bandcamp</a>
+        <button class="gallery-button" onclick="openGalleryModal('gallery2')">Photo Gallery</button>
+        <button class="back-button" onclick="closeAlbumPage('album2')">Back</button>
+        <div class="album-cover-container">
+                <img src="album2-cover.jpg" alt="Radioactive Noise Cover" class="album-cover">
+            </div>
+        </div>
+    </div>
+    <div id="album3" class="album-page">
+        <h1>Forgotten Oil Rigs</h1>
+        <p class="album-info">Forgotten Oil Rigs is a concept album about a boy forced to drill oil, exploring exploitation and rebirth. Created 2016–2020, finalized during COVID-19, includes videos for "Workers Will" and "Mindfold."</p>
+        <a href="https://ryanwall.bandcamp.com/album/forgotten-oil-rigs" class="buy-button" target="_blank">Buy on Bandcamp</a>
+        <button class="gallery-button" onclick="openGalleryModal('gallery3')">Photo Gallery</button>
+        <button class="back-button" onclick="closeAlbumPage('album3')">Back</button>
+        <div class="album-cover-container">
+            <img src="album3-cover.jpg" alt="Forgotten Oil Rigs Cover" class="album-cover">
+        </div>
+    </div>
+    <div id="album4" class="album-page">
+        <h1>The Atrium</h1>
+        <p class="album-info">The Atrium delves into themes of confinement and mystery beneath an enigmatic structure—Rad’s next ambient narrative journey. Coming Soon!</p>
+        <button class="gallery-button" onclick="openGalleryModal('gallery4')">Photo Gallery</button>
+        <button class="back-button" onclick="closeAlbumPage('album4')">Back</button>
+        <div class="album-cover-container">
+            <img src="album4-cover.jpg" alt="The Atrium Cover" class="album-cover">
+        </div>
+    </div>
+    <div id="album5" class="album-page">
+        <h1>Forgotten Oil Rigs 2: Eternal Sands</h1>
+        <p class="album-info">Eternal Sands continues the Offshore Oil Rig saga—stories of desolation and rebirth, expanding on its predecessor’s legacy. Coming Soon!</p>
+        <button class="gallery-button" onclick="openGalleryModal('gallery5')">Photo Gallery</button>
+        <button class="back-button" onclick="closeAlbumPage('album5')">Back</button>
+        <div class="album-cover-container">
+            <img src="album5-cover.jpg" alt="Forgotten Oil Rigs 2 Cover" class="album-cover">
+        </div>
+    </div>
+    <!-- EP Page -->
+    <div id="ep1" class="album-page">
+        <h1>Roads of Oil (EP)</h1>
+        <p class="album-info">Roads of Oil explores new sonic landscapes drenched in gritty textures and haunting melodies—Rad’s latest EP, released 2025.</p>
+        <a href="https://ryanwall.bandcamp.com/album/roads-of-oil-ep" class="buy-button" target="_blank">Buy on Bandcamp</a>
+        <button class="gallery-button" onclick="openGalleryModal('gallery6')">Photo Gallery</button>
+        <button class="back-button" onclick="closeAlbumPage('ep1')">Back</button>
+        <div class="album-cover-container">
+            <img src="ep-roads-of-oil-cover.jpg" alt="Roads of Oil Cover" class="album-cover">
+        </div>
+    </div>
+
+    <!-- Gallery Modals -->
+    <div id="gallery1" class="gallery-modal">
+        <button class="gallery-close" onclick="closeGalleryModal('gallery1')">X</button>
+        <div class="gallery-controls">
+            <button class="gallery-button-nav" onclick="navigateGallery('gallery1','previous')">&lt;</button>
+            <div class="gallery-image-container">
+                <div id="gallery1-text" class="gallery-text">I1</div>
+                <img id="gallery1-image" class="gallery-image" src="gallery1/gallery1-image1.jpg" alt="Sleep Image">
+            </div>
+            <button class="gallery-button-nav" onclick="navigateGallery('gallery1','next')">&gt;</button>
+        </div>
+        <button class="back-button" onclick="closeGalleryModal('gallery1')">Back</button>
+    </div>
+
+    <div id="gallery2" class="gallery-modal">
+        <button class="gallery-close" onclick="closeGalleryModal('gallery2')">X</button>
+        <div class="gallery-controls">
+            <button class="gallery-button-nav" onclick="navigateGallery('gallery2','previous')">&lt;</button>
+            <div class="gallery-image-container">
+                <div id="gallery2-text" class="gallery-text">I1</div>
+                <img id="gallery2-image" class="gallery-image" src="gallery2/gallery2-image1.jpg" alt="Radioactive Noise Image">
+            </div>
+            <button class="gallery-button-nav" onclick="navigateGallery('gallery2','next')">&gt;</button>
+        </div>
+        <button class="back-button" onclick="closeGalleryModal('gallery2')">Back</button>
+    </div>
+
+    <div id="gallery3" class="gallery-modal">
+        <button class="gallery-close" onclick="closeGalleryModal('gallery3')">X</button>
+        <div class="gallery-controls">
+            <button class="gallery-button-nav" onclick="navigateGallery('gallery3','previous')">&lt;</button>
+            <div class="gallery-image-container">
+                <div id="gallery3-text" class="gallery-text">I1</div>
+                <img id="gallery3-image" class="gallery-image" src="gallery3/gallery3-image1.jpg" alt="Forgotten Oil Rigs Image">
+            </div>
+            <button class="gallery-button-nav" onclick="navigateGallery('gallery3','next')">&gt;</button>
+        </div>
+        <button class="back-button" onclick="closeGalleryModal('gallery3')">Back</button>
+    </div>
+
+    <div id="gallery4" class="gallery-modal">
+        <button class="gallery-close" onclick="closeGalleryModal('gallery4')">X</button>
+        <div class="gallery-controls">
+            <button class="gallery-button-nav" onclick="navigateGallery('gallery4','previous')">&lt;</button>
+            <div class="gallery-image-container">
+                <div id="gallery4-text" class="gallery-text">Placeholder</div>
+                <img id="gallery4-image" class="gallery-image" src="gallery4/gallery4-image1.jpg" alt="Atrium Image">
+            </div>
+            <button class="gallery-button-nav" onclick="navigateGallery('gallery4','next')">&gt;</button>
+        </div>
+        <button class="back-button" onclick="closeGalleryModal('gallery4')">Back</button>
+    </div>
+
+    <div id="gallery5" class="gallery-modal">
+        <button class="gallery-close" onclick="closeGalleryModal('gallery5')">X</button>
+        <div class="gallery-controls">
+            <button class="gallery-button-nav" onclick="navigateGallery('gallery5','previous')">&lt;</button>
+            <div class="gallery-image-container">
+                <div id="gallery5-text" class="gallery-text">Preview 1</div>
+                <img id="gallery5-image" class="gallery-image" src="gallery5/gallery5-image1.jpg" alt="Eternal Sands Image">
+            </div>
+            <button class="gallery-button-nav" onclick="navigateGallery('gallery5','next')">&gt;</button>
+        </div>
+        <button class="back-button" onclick="closeGalleryModal('gallery5')">Back</button>
+    </div>
+
+    <div id="gallery6" class="gallery-modal">
+        <button class="gallery-close" onclick="closeGalleryModal('gallery6')">X</button>
+        <div class="gallery-controls">
+            <button class="gallery-button-nav" onclick="navigateGallery('gallery6','previous')">&lt;</button>
+            <div class="gallery-image-container">
+                <div id="gallery6-text" class="gallery-text">I1</div>
+                <img id="gallery6-image" class="gallery-image" src="gallery6/gallery6-image1.jpg" alt="Roads of Oil Image">
+            </div>
+            <button class="gallery-button-nav" onclick="navigateGallery('gallery6','next')">&gt;</button>
+        </div>
+        <button class="back-button" onclick="closeGalleryModal('gallery6')">Back</button>
+    </div>
+
+    <script>
+        const galleryImages = {
+            gallery1: [
+                { src: 'gallery1/gallery1-image1.jpg', text: 'After the release of Warp Prism - Transcode (2010), Radwall felt the need to find himself by creating his first album Sleep (2011)' },
+                { src: 'gallery1/gallery1-image2.jpg', text: 'Sleep Album Shoot by Photographer Mike Cuffe' },
+                { src: 'gallery1/gallery1-image3.jpg', text: '"Don’t fight it, just close your eyes"' },
+                { src: 'gallery1/gallery1-image4.jpg', text: '"Wait for the memories to come... don’t look back"' },
+                { src: 'gallery1/gallery1-image5.jpg', text: '"JUNCTION"' }
+            ],
+            gallery2: [
+                { src: 'gallery2/gallery2-image1.jpg', text: 'In 2015 after two Warp Prism albums a journey was formed... ' },
+                { src: 'gallery2/gallery2-image2.jpg', text: 'The Wanderer' },
+                { src: 'gallery2/gallery2-image3.jpg', text: 'The Spray Paint Prince' },
+                { src: 'gallery2/gallery2-image4.jpg', text: 'Gladewinds' },
+                { src: 'gallery2/gallery2-image5.jpg', text: 'Eternity' }
+            ],
+            gallery3: [
+                { src: 'gallery3/gallery3-image1.jpg', text: 'Summoned into thousands of worlds, he finally found his resting place...' },
+                { src: 'gallery3/gallery3-image2.jpg', text: 'The Kid on the Offshore Oilrig' },
+                { src: 'gallery3/gallery3-image3.jpg', text: 'Release Banner circa Facebook 2020' },
+                { src: 'gallery3/gallery3-image4.jpg', text: 'Workers Will music video shoot (Covid lockdown)' },
+                { src: 'gallery3/gallery3-image5.jpg', text: 'The Gradient Reveals the Story. Forgotten Oil Rigs tells the story of an alternate world that seemed strange, a frozen purgatory. The character is at the mercy of this ghostly existence. The story was told in song stories that evolve and shift. The Great Desert Stories will be a trilogy—with *Roads of Oil* as the catalyst. Forgotten Oil Rigs came from my works between 2013–2020. Some tracks were left behind and became *Roads of Oil*. The rest will form the 3rd and final chapter, which will launch alongside a sandboarding video game. In Forgotten Oil Rigs, Ryan Wall conjures a surreal odyssey where industrial decay intertwines with personal transformation. The album follows a young protagonist trapped on an offshore platform, symbolizing humanity’s relentless exploitation of nature and the self. As the narrative unfolds, the character endures physical and emotional disintegration, mirroring the environmental collapse around him A pivotal moment occurs in the track “Envelope,” where the protagonist discovers a sealed letter from his father. Drawn to a locked chamber filled with golden instruments, he attempts to open the heavy valve securing the door. As he twists it, the envelope slips from his pocket and mysteriously shreds itself before touching the ground, erasing its contents and the connection to his past. This act signifies a point of no return, where the protagonist is forced to confront the unknown without guidance.Throughout the album, Wall employs progressive metal and ambient textures to evoke the depths of the ocean floor and the airy heights of ocean cranes. Tracks like “Awakened by the Sound of the Drill” and “Work” depict the invasive machinery and the protagonist’s descent into a mechanized existence. The journey reaches a metaphysical climax in “The Kola Superdeep Borehole,” where the character splits his soul, surrendering to the abyss. Ultimately, the album portrays a cycle of destruction and rebirth, urging listeners to reflect on the consequences of industrialization and the possibility of renewal through introspection and change.' }
+            ],
+        
+            gallery4: [
+                { src: 'gallery4/gallery4-image1.jpg', text: 'The Atrium will be revealed to us. I can hear the echo bouncing off the massive stone columns. ' },
+                { src: 'gallery4/gallery4-image2.jpg', text: 'The Atrium is a massive project. An album and a video game all fused together in different ways. It will be a lot of work, but Im having fun with it :) ' },
+                { src: 'gallery4/gallery4-image3.jpg', text: 'Why do they fall through the glass above?' }
+            ],
+            gallery5: [
+                { src: 'gallery5/gallery5-image1.jpg', text: 'The Final Chapter in the Great Desert Story' },
+                { src: 'gallery5/gallery5-image2.jpg', text: 'Find the secrets of the Forgotten Rigs, the remnants of the Industrial World' },
+                { src: 'gallery5/gallery5-image3.jpg', text: 'Find Your Meaning... Forgotten Oil Rigs 2' }
+            ],
+            gallery6: [
+                { src: 'gallery6/gallery6-image1.jpg', text: 'Roads of Oil 2025' },
+                { src: 'gallery6/gallery6-image2.jpg', text: 'Please Inspire Me' },
+                       { src: 'gallery6/gallery6-image3.jpg', text: 'Valveheart pt1. Train From War, pt2. Grissomeria, pt3. Solace pt4. Freeman (Break the Chambers)' }
+            ]
+        };
+
+        function openAlbumPage(albumId, effect) {
+            document.getElementById(albumId).classList.add('active');
+            document.getElementById('album-container').classList.add('hidden');
+            document.body.style.backgroundImage = `url('backgrounds/${albumId}-bg.jpg')`;
+            document.body.style.backgroundSize = 'cover';
+            document.body.style.backgroundPosition = 'center';
+            startParticleEffect(effect);
+        }
+
+        function closeAlbumPage(albumId) {
+            document.getElementById(albumId).classList.remove('active');
+            document.getElementById('album-container').classList.remove('hidden');
+            document.body.style.backgroundImage = '';
+            stopParticleEffect();
+        }
+
+        function openGalleryModal(galleryId) {
+            const images = galleryImages[galleryId];
+            const img = document.getElementById(`${galleryId}-image`);
+            const txt = document.getElementById(`${galleryId}-text`);
+            
+            // Set first image and caption on open
+            img.src = images[0].src;
+            txt.textContent = images[0].text;
+
+            document.getElementById(galleryId).classList.add('active');
+        }
+        function closeGalleryModal(galleryId) {
+            document.getElementById(galleryId).classList.remove('active');
+        }
+
+        function navigateGallery(galleryId, direction) {
+            const images = galleryImages[galleryId];
+            const img = document.getElementById(`${galleryId}-image`);
+            const txt = document.getElementById(`${galleryId}-text`);
+            const current = img.src.split('/').pop();
+            let i = images.findIndex(g => g.src.split('/').pop() === current);
+            i = (direction === 'next')
+                ? (i + 1) % images.length
+                : (i - 1 + images.length) % images.length;
+            img.src = images[i].src;
+            txt.textContent = images[i].text;
+        }
+
+        function startParticleEffect(effect) {
+            particlesJS('particles-js', {
+                particles: {
+                    number: { value: 80, density: { enable: true, value_area: 700 } },
+                    color: { value: effect === 'sand' ? '#d2b48c' : effect === 'distort' ? '#ff0000' : '#00bfff' },
+                    shape: { type: 'circle' },
+                    opacity: { value: 0.5 },
+                    size: { value: 4, random: true },
+                    line_linked: { enable: false },
+                    move: { enable: true, speed: 5, direction: effect === 'sand' ? 'right' : 'none', random: true }
+                },
+                interactivity: {
+                    detect_on: 'canvas',
+                    events: {
+                        onhover: { enable: true, mode: 'repulse' },
+                        onclick: { enable: true, mode: 'push' },
+                        resize: true
+                    },
+                    modes: { repulse: { distance: 100, duration: 0.4 } }
+                },
+                retina_detect: true
+            });
+        }
+
+        function stopParticleEffect() {
+            const canvas = document.querySelector('#particles-js canvas');
+            if (canvas) canvas.remove();
+        }
+    </script>
+</body>
+</html>
+
+<!-- Version: Music Albums & EPs v1.3 back button>
