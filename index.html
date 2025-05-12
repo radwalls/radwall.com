@@ -16,7 +16,23 @@
         .album img, .ep-card img { width:100%; height:100%; object-fit:cover; border-radius:5px; }
         .black-and-white img { filter:grayscale(100%); transition:filter 0.3s ease-in-out; }
         .black-and-white:hover img { filter:grayscale(0%); }
-        .album-page { display:none; flex-direction:column; align-items:center; text-align:center; padding:20px; background-color:rgba(34,34,34,0.65); width:100%; height:100vh; position:fixed; top:0; left:0; z-index:1000; overflow-y:auto; }
+     .album-page {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 20px 20px 100px 20px; /* bottom padding for scroll */
+    background-color: rgba(34,34,34,0.65);
+    width: 100%;
+    min-height: 100vh;
+    position: absolute; /* ← allows full scroll */
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
         .album-page.active { display:flex; }
         .album-info {
             margin-top: 20px;
