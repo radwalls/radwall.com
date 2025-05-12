@@ -139,6 +139,36 @@
 
         #particles-js { position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1; }
         .hidden { display:none; }
+@media (max-width: 768px) {
+  /* Stack nav + image in one column on narrow screens */
+  .gallery-controls {
+    flex-direction: column;    /* prev / image / next vertically */
+    width: 100%;               /* full width of the modal */
+    padding: 0;                /* kill any side‑padding */
+    box-sizing: border-box;
+    gap: 10px;                 /* small gap between each */
+  }
+
+  /* Make the image container fill that space */
+  .gallery-image-container {
+    width: 100%;
+    padding: 0;
+  }
+
+  /* Let the <img> go full‑width & taller */
+  .gallery-image {
+    width: 100%;
+    max-height: calc(100vh - 160px);
+    /* 160px is an estimate for nav + captions + padding; tweak as needed */
+    object-fit: contain;
+  }
+
+  /* Space out the buttons a bit */
+  .gallery-button-nav {
+    margin: 10px 0;
+  }
+}
+
     </style>
     <script src="https://cdn.jsdelivr.net/npm/particles.js"></script>
 </head>
