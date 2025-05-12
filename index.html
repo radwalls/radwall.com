@@ -42,14 +42,16 @@
 }
 
 .gallery-controls {
+    position: relative;
     display: flex;
+    justify-content: space-between;
     align-items: center;
     gap: 20px;
     max-width: 90%;
     width: 100%;
-    flex-wrap: nowrap;
+    padding: 0 10px;
+    box-sizing: border-box;
 }
-
 
         .album-cover-container {
     margin-top: 30px;
@@ -94,7 +96,6 @@
     position: static; /* <- removes the absolute overlay */
 }
 
-        .gallery-controls { position:absolute; width:100%; display:flex; justify-content:space-between; top:50%; transform:translateY(-50%); }
         .gallery-button-nav, .gallery-close { background-color:#444; color:white; padding:10px; border-radius:5px; cursor:pointer; }
         .gallery-button-nav:hover, .gallery-close:hover { background-color:#666; }
         #particles-js { position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1; }
@@ -188,7 +189,6 @@
 
     <!-- Gallery Modals -->
     <div id="gallery1" class="gallery-modal">
-        <button class="gallery-close" onclick="closeGalleryModal('gallery1')">X</button>
         <div class="gallery-controls">
             <button class="gallery-button-nav" onclick="navigateGallery('gallery1','previous')">&lt;</button>
            <div class="gallery-image-container">
@@ -202,7 +202,6 @@
     </div>
 
     <div id="gallery2" class="gallery-modal">
-        <button class="gallery-close" onclick="closeGalleryModal('gallery2')">X</button>
         <div class="gallery-controls">
             <button class="gallery-button-nav" onclick="navigateGallery('gallery2','previous')">&lt;</button>
             <div class="gallery-image-container">
@@ -215,7 +214,6 @@
     </div>
 
     <div id="gallery3" class="gallery-modal">
-        <button class="gallery-close" onclick="closeGalleryModal('gallery3')">X</button>
         <div class="gallery-controls">
             <button class="gallery-button-nav" onclick="navigateGallery('gallery3','previous')">&lt;</button>
             <div class="gallery-image-container">
@@ -228,7 +226,6 @@
     </div>
 
     <div id="gallery4" class="gallery-modal">
-        <button class="gallery-close" onclick="closeGalleryModal('gallery4')">X</button>
         <div class="gallery-controls">
             <button class="gallery-button-nav" onclick="navigateGallery('gallery4','previous')">&lt;</button>
             <div class="gallery-image-container">
@@ -241,7 +238,6 @@
     </div>
 
     <div id="gallery5" class="gallery-modal">
-        <button class="gallery-close" onclick="closeGalleryModal('gallery5')">X</button>
         <div class="gallery-controls">
             <button class="gallery-button-nav" onclick="navigateGallery('gallery5','previous')">&lt;</button>
             <div class="gallery-image-container">
@@ -254,7 +250,6 @@
     </div>
 
     <div id="gallery6" class="gallery-modal">
-        <button class="gallery-close" onclick="closeGalleryModal('gallery6')">X</button>
         <div class="gallery-controls">
             <button class="gallery-button-nav" onclick="navigateGallery('gallery6','previous')">&lt;</button>
             <div class="gallery-image-container">
