@@ -223,7 +223,12 @@
         <div class="ep-row">
             <div class="ep-card" onclick="openAlbumPage('ep1','sand')"><img src="ep-roads-of-oil-cover.jpg" alt="Roads of Oil"></div>
         </div>
+<div style="width: 100%; display: flex; justify-content: center; margin: 50px 0;">
+  <button onclick="openAlbumPage('final-page')" class="gallery-button">About / Join</button>
+</div>
+
     </div>
+
 
     <!-- Album Pages -->
     <div id="album1" class="album-page">
@@ -476,6 +481,25 @@
             if (canvas) canvas.remove();
         }
     </script>
+<!-- Final Page with About, Discord Button, Final Image -->
+<div id="final-page" class="album-page">
+    <h1>Who is Radwalls?</h1>
+
+    <p class="album-info">
+        Hey, I'm Radwalls. I make progressive concept albums and games that blend storytelling, visual art, and sound. Whether it's drifting through the ruins of an oil rig or unraveling the secrets beneath the Atrium, you're part of it. Thanks for being here. I also stream Dark Souls 2, my music, and variety over at <a href="https://www.twitch.tv/radwalls" target="_blank" style="color:#00ffcc; text-decoration: underline;">twitch.tv/radwalls</a>.
+    </p>
+
+    <a href="https://discord.gg/sJkrxrR9jx" target="_blank" class="buy-button">Join the Discord</a>
+
+<div class="album-cover-container" style="margin-top: 40px; display: flex; flex-direction: column; align-items: center;">
+    <img src="final-image.jpg" alt="Final Image" class="album-cover">
+    <button class="back-button" onclick="closeAlbumPage('final-page')" style="margin-top: 20px;">Back</button>
+</div>
+
+
+
+
+
 </body>
 </html>
 
