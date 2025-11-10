@@ -16,6 +16,17 @@
         .album img, .ep-card img { width:100%; height:100%; object-fit:cover; border-radius:5px; }
         .black-and-white img { filter:grayscale(100%); transition:filter 0.3s ease-in-out; }
         .black-and-white:hover img { filter:grayscale(0%); }
+        .coaching-section { width:100%; display:flex; flex-direction:column; align-items:center; gap:20px; padding:20px; box-sizing:border-box; }
+        .coaching-section h2 { color:#ffd166; letter-spacing:1px; text-transform:uppercase; }
+        .coaching-card { position:relative; width:300px; max-width:80vw; border-radius:12px; overflow:hidden; cursor:pointer; box-shadow:0 0 25px rgba(0,0,0,0.4); transition:transform 0.3s ease, box-shadow 0.3s ease; }
+        .coaching-card:hover { transform:translateY(-6px); box-shadow:0 10px 30px rgba(0,0,0,0.6); }
+        .coaching-card img { width:100%; height:auto; display:block; }
+        .coaching-card::after { content:'Discover Endless Vocals'; position:absolute; inset:0; display:flex; align-items:flex-end; justify-content:center; padding:20px; background:linear-gradient(180deg, rgba(0,0,0,0.1) 20%, rgba(0,0,0,0.75) 100%); color:#fff; font-weight:bold; letter-spacing:1px; text-transform:uppercase; font-size:14px; }
+        .coaching-content { display:flex; flex-direction:column; align-items:center; gap:15px; max-width:600px; }
+        .coaching-photo { width:320px; max-width:90vw; border-radius:14px; box-shadow:0 0 25px rgba(0,0,0,0.5); }
+        .coaching-links { display:flex; flex-wrap:wrap; justify-content:center; gap:15px; margin-top:10px; }
+        .coaching-link { background:linear-gradient(135deg, #ffd166, #ef476f); color:#000; font-weight:bold; padding:12px 22px; border-radius:30px; text-decoration:none; transition:transform 0.2s ease, box-shadow 0.2s ease; }
+        .coaching-link:hover { transform:translateY(-3px); box-shadow:0 10px 20px rgba(239,71,111,0.45); }
      .album-page {
     display: none;
     flex-direction: column;
@@ -216,6 +227,14 @@
         <div class="ep-row">
             <div class="ep-card" onclick="openAlbumPage('ep1','sand')"><img src="ep-roads-of-oil-cover.jpg" alt="Roads of Oil"></div>
         </div>
+ <div class="divider"></div>
+        <div class="coaching-section">
+            <h2>Vocal Coaching</h2>
+            <div class="coaching-card" onclick="openAlbumPage('vocal-coaching','vocal','linear-gradient(135deg, rgba(15,12,41,0.95), rgba(48,43,99,0.9), rgba(36,36,62,0.95))')">
+                <img src="https://images.unsplash.com/photo-1485579149621-3123dd979885?auto=format&fit=crop&w=800&q=80" alt="Vocal coaching microphone and singer silhouette">
+            </div>
+        </div>
+
  <div class="divider"></div>
  <div class="album-row">
             <div class="album" onclick="openAlbumPage('album1','sand')"><img src="album1-cover.jpg" alt="Sleep"></div>
@@ -418,10 +437,14 @@
             ]
         };
 
-        function openAlbumPage(albumId, effect) {
+        function openAlbumPage(albumId, effect, backgroundOverride) {
             document.getElementById(albumId).classList.add('active');
             document.getElementById('album-container').classList.add('hidden');
-            document.body.style.backgroundImage = `url('backgrounds/${albumId}-bg.jpg')`;
+            if (backgroundOverride) {
+                document.body.style.backgroundImage = backgroundOverride;
+            } else {
+                document.body.style.backgroundImage = `url('backgrounds/${albumId}-bg.jpg')`;
+            }
             document.body.style.backgroundSize = 'cover';
             document.body.style.backgroundPosition = 'center';
             startParticleEffect(effect);
@@ -466,7 +489,7 @@
             particlesJS('particles-js', {
                 particles: {
                     number: { value: 80, density: { enable: true, value_area: 700 } },
-                    color: { value: effect === 'sand' ? '#d2b48c' : effect === 'distort' ? '#ff0000' : '#00bfff' },
+                    color: { value: effect === 'sand' ? '#d2b48c' : effect === 'distort' ? '#ff0000' : effect === 'vocal' ? '#ffd166' : '#00bfff' },
                     shape: { type: 'circle' },
                     opacity: { value: 0.5 },
                     size: { value: 4, random: true },
@@ -510,6 +533,22 @@
 
 
 
+</div>
+
+<div id="vocal-coaching" class="album-page">
+    <h1>Endless Vocals Coaching</h1>
+    <div class="coaching-content">
+        <p class="album-info" style="text-align:center;">
+            Endless Vocals pairs singers with experienced vocal coaches who focus on healthy technique, confidence, and performance storytelling. Whether you are preparing for studio sessions or stepping onto the stage for the first time, our mentors build a plan that keeps your voice inspired.
+        </p>
+        <img class="coaching-photo" src="https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=1000&q=80" alt="Singer practicing with vocal coach">
+        <div class="coaching-links">
+            <a class="coaching-link" href="https://discord.gg/eQMNpUA687" target="_blank" rel="noopener">Join the Endless Vocals Discord</a>
+            <a class="coaching-link" href="https://endlessvocals.com" target="_blank" rel="noopener">Visit EndlessVocals.com</a>
+        </div>
+    </div>
+    <button class="back-button" onclick="closeAlbumPage('vocal-coaching')" style="margin-top:30px;">Back</button>
+</div>
 </body>
 </html>
 
