@@ -87,14 +87,14 @@
     margin-bottom: 20px;
 }
 
-        
+
         .album-cover {
             width: 280px;
             height: auto;
             border-radius: 12px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
         }
-        
+
         .gallery-modal .back-button {
                position: absolute;
                top: 20px;
@@ -210,6 +210,26 @@
 .gallery-modal.active { padding: 0 !important; }      /* kill 20 px inset   */
 .gallery-controls     { max-width: none !important;   /* no 90 % shrink    */
                         padding: 0 !important; left:0; right:0; } /* snap edges */
+        .project-grey-card { overflow:hidden; background:linear-gradient(180deg, #5a1e1b 0%, #161616 44%, #030303 100%); border:1px solid rgba(209,75,63,0.45); }
+        .project-grey-art { position:relative; width:100%; height:100%; padding:10px; background:radial-gradient(circle at 50% 32%, rgba(230,79,62,0.35), transparent 24%), linear-gradient(180deg, rgba(151,35,32,0.8) 0 32%, rgba(12,12,12,0.95) 33% 100%); color:#eee2da; text-align:left; transition:filter 0.3s ease-in-out; }
+        .project-grey-art::before { content:''; position:absolute; left:10%; right:10%; top:53%; height:3px; background:linear-gradient(90deg, transparent, rgba(220,70,60,0.95), transparent); box-shadow:0 0 18px rgba(220,70,60,0.8); }
+        .project-grey-art strong { position:absolute; left:10px; right:10px; bottom:14px; font-size:16px; letter-spacing:.8px; line-height:.96; text-transform:uppercase; }
+        .project-grey-art span { position:absolute; left:10px; bottom:52px; color:#bca99a; font-size:10px; letter-spacing:2px; text-transform:uppercase; }
+        .black-and-white .project-grey-art { filter:grayscale(100%); }
+        .black-and-white:hover .project-grey-art { filter:grayscale(0%); }
+        .grey-red-page { background:radial-gradient(circle at 50% 8%, rgba(174,45,38,0.28), transparent 24%), rgba(16,16,16,0.86); }
+        .grey-red-info { border:1px solid rgba(209,75,63,0.25); box-shadow:0 0 42px rgba(0,0,0,0.35); }
+        .grey-red-cover { width:280px; height:280px; border-radius:12px; background:linear-gradient(180deg, #7b2924 0 28%, #141414 29% 68%, #020202 69% 100%); border:1px solid rgba(209,75,63,0.45); box-shadow:0 0 30px rgba(129,27,24,0.45); display:flex; flex-direction:column; justify-content:flex-end; align-items:flex-start; padding:22px; text-align:left; position:relative; overflow:hidden; }
+        .grey-red-cover::before { content:''; position:absolute; left:-12%; right:-12%; top:34%; height:4px; background:linear-gradient(90deg, transparent, rgba(255,88,68,0.9), transparent); box-shadow:0 0 26px rgba(255,88,68,0.8); }
+        .grey-red-cover strong { z-index:1; font-size:24px; letter-spacing:2px; text-transform:uppercase; }
+        .grey-red-cover span { z-index:1; color:#bda995; font-size:12px; letter-spacing:3px; text-transform:uppercase; }
+        .machine-link { background:linear-gradient(180deg, #672925, #241918); border:1px solid rgba(209,75,63,0.8); color:#f0ded4; text-decoration:none; box-shadow:0 0 18px rgba(209,75,63,0.28); }
+        .machine-link:hover { background:linear-gradient(180deg, #8a2828, #321a18); }
+        .grey-red-links { display:flex; flex-wrap:wrap; justify-content:center; gap:12px; margin-top:12px; }
+        .grey-red-small-gallery { width:min(620px, 92vw); margin:18px auto 0; display:grid; grid-template-columns:repeat(auto-fit, minmax(92px, 1fr)); gap:10px; }
+        .grey-red-small-gallery img { width:100%; aspect-ratio:1; object-fit:cover; border-radius:10px; border:1px solid rgba(209,75,63,0.28); box-shadow:0 10px 26px rgba(0,0,0,0.35); }
+        .grey-red-gallery-empty { grid-column:1 / -1; color:#a89f98; font-size:12px; letter-spacing:.08em; text-transform:uppercase; border:1px dashed rgba(209,75,63,0.35); border-radius:12px; padding:14px; }
+
 
 
     </style>
@@ -221,8 +241,8 @@
  <div class="divider"></div>
 <h2>Radwalls Music Site</h2>
         <h2>Contact: Radwalls@gmail.com</h2>
-       
-        
+
+
         <h2>Newest Release</h2>
         <div class="ep-row">
             <div class="ep-card" onclick="openAlbumPage('ep1','sand')"><img src="ep-roads-of-oil-cover.jpg" alt="Roads of Oil"></div>
@@ -246,8 +266,11 @@
         <div class="album-row">
             <div class="album black-and-white" onclick="openAlbumPage('album4','none')"><img src="album4-cover.jpg" alt="The Atrium"></div>
             <div class="album black-and-white" onclick="openAlbumPage('album5','none')"><img src="album5-cover.jpg" alt="Forgotten Oil Rigs 2: Eternal Sands"></div>
+            <div class="album project-grey-card black-and-white" onclick="openAlbumPage('grey-red','grey-red','linear-gradient(160deg, rgba(85,24,22,0.95), rgba(9,9,9,0.96) 48%, rgba(2,2,2,0.98))')" aria-label="Open Project Grey Red">
+                <div class="project-grey-art"><span>Coming Soon</span><strong>Project Grey Red</strong></div>
+            </div>
         </div>
-       
+
 <div style="width: 100%; display: flex; justify-content: center; margin: 50px 0;">
   <button onclick="openAlbumPage('final-page')" class="gallery-button">About / Join</button>
 </div>
@@ -306,6 +329,24 @@
             <img src="album5-cover.jpg" alt="Forgotten Oil Rigs 2 Cover" class="album-cover">
         </div>
     </div>
+
+    <div id="grey-red" class="album-page grey-red-page">
+        <h1>Project Grey Red</h1>
+        <p class="album-info grey-red-info">The grey and red horizon. Will you salvage, or will you expedite to steal? Survive long enough to build your ascent into the space skies, build your empire, and then find the colony you were born in.</p>
+        <div class="album-cover-container">
+            <div class="grey-red-cover" role="img" aria-label="Artwork for Project Grey Red with a red horizon over black sand">
+                <span>Grey Horizon</span>
+                <strong>Grey Red</strong>
+            </div>
+        </div>
+        <div class="grey-red-small-gallery" id="grey-red-small-gallery" aria-live="polite"></div>
+        <div class="grey-red-links">
+            <a class="gallery-button machine-link" href="grey-red-synth.html">Machine Synth</a>
+            <a class="gallery-button" href="grey-red-progress.html">Progress Blog</a>
+        </div>
+        <button class="back-button" onclick="closeAlbumPage('grey-red')">Back</button>
+    </div>
+
     <!-- EP Page -->
     <div id="ep1" class="album-page">
         <h1>Roads of Oil (EP)</h1>
@@ -360,7 +401,7 @@
         <div class="gallery-controls">
             <button class="gallery-button-nav" onclick="navigateGallery('gallery4','previous')">&lt;</button>
             <div class="gallery-image-container">
-                <div id="gallery4-text" class="gallery-text">Placeholder</div>
+                <div id="gallery4-text" class="gallery-text">Atrium Preview</div>
                 <img id="gallery4-image" class="gallery-image" src="gallery4/gallery4-image1.jpg" alt="Atrium Image">
             </div>
             <button class="gallery-button-nav" onclick="navigateGallery('gallery4','next')">&gt;</button>
@@ -419,7 +460,7 @@
 }
 
             ],
-        
+
             gallery4: [
                 { src: 'gallery4/gallery4-image1.jpg', text: 'The Atrium will be revealed to us. I can hear the echo bouncing off the massive stone columns. ' },
                 { src: 'gallery4/gallery4-image2.jpg', text: 'The Atrium is a massive project. An album and a video game all fused together in different ways. It will be a lot of work, but Im having fun with it :) ' },
@@ -461,7 +502,7 @@
             const images = galleryImages[galleryId];
             const img = document.getElementById(`${galleryId}-image`);
             const txt = document.getElementById(`${galleryId}-text`);
-            
+
             // Set first image and caption on open
             img.src = images[0].src;
             txt.textContent = images[0].text;
@@ -489,12 +530,12 @@
             particlesJS('particles-js', {
                 particles: {
                     number: { value: 80, density: { enable: true, value_area: 700 } },
-                    color: { value: effect === 'sand' ? '#d2b48c' : effect === 'distort' ? '#ff0000' : effect === 'vocal' ? '#ffd166' : '#00bfff' },
+                    color: { value: effect === 'sand' ? '#d2b48c' : effect === 'distort' ? '#ff0000' : effect === 'vocal' ? '#ffd166' : effect === 'grey-red' ? '#d14b3f' : '#00bfff' },
                     shape: { type: 'circle' },
                     opacity: { value: 0.5 },
                     size: { value: 4, random: true },
                     line_linked: { enable: false },
-                    move: { enable: true, speed: 5, direction: effect === 'sand' ? 'right' : 'none', random: true }
+                    move: { enable: true, speed: effect === 'grey-red' ? 3 : 5, direction: effect === 'sand' ? 'right' : 'none', random: true }
                 },
                 interactivity: {
                     detect_on: 'canvas',
@@ -513,6 +554,48 @@
             const canvas = document.querySelector('#particles-js canvas');
             if (canvas) canvas.remove();
         }
+
+
+        const greyRedGalleryCandidates = [
+            'grey-red-image1.jpg',
+            'grey-red-image2.jpg',
+            'grey-red-image3.jpg',
+            'grey-red-image4.jpg',
+            'grey-red-image5.jpg',
+            'grey-red-image6.jpg'
+        ];
+
+        function loadGreyRedSmallGallery() {
+            const gallery = document.getElementById('grey-red-small-gallery');
+            if (!gallery) return;
+
+            gallery.innerHTML = '';
+            let loaded = 0;
+            let finished = 0;
+            const showEmptyState = () => {
+                if (finished === greyRedGalleryCandidates.length && loaded === 0) {
+                    gallery.innerHTML = '<div class="grey-red-gallery-empty">Grey Red pictures will surface here when image files are present.</div>';
+                }
+            };
+
+            greyRedGalleryCandidates.forEach((fileName, index) => {
+                const img = new Image();
+                img.alt = `Project Grey Red gallery image ${index + 1}`;
+                img.onload = () => {
+                    loaded += 1;
+                    finished += 1;
+                    gallery.appendChild(img);
+                    showEmptyState();
+                };
+                img.onerror = () => {
+                    finished += 1;
+                    showEmptyState();
+                };
+                img.src = `grey-red-pictures/${fileName}`;
+            });
+        }
+
+        loadGreyRedSmallGallery();
     </script>
 <!-- Final Page with About, Discord Button, Final Image -->
 <div id="final-page" class="album-page">
