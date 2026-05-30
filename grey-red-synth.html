@@ -69,6 +69,47 @@
       gap: 18px;
     }
 
+    @media (min-width: 901px) {
+      body { overflow: hidden; }
+
+      main {
+        width: 100vw;
+        max-width: none;
+        min-height: 100vh;
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr);
+        padding: 18px;
+      }
+
+      header {
+        grid-template-columns: auto minmax(280px, 0.65fr) minmax(380px, 1fr);
+        align-items: end;
+        column-gap: 20px;
+        margin-bottom: 16px;
+      }
+
+      h1 { font-size: clamp(36px, 4.1vw, 64px); }
+
+      .subtitle {
+        max-width: none;
+        font-size: 14px;
+      }
+
+      .layout {
+        min-height: 0;
+        grid-template-columns: minmax(660px, 1.55fr) minmax(360px, 0.75fr);
+      }
+
+      .panel {
+        min-height: 0;
+        overflow-y: auto;
+      }
+
+      .controls { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+      .preset-row { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+    }
+
     @media (max-width: 900px) {
       .layout { grid-template-columns: 1fr; }
     }
@@ -205,6 +246,11 @@
 
     @media (max-width: 650px) {
       .controls { grid-template-columns: 1fr; }
+    }
+
+    @media (min-width: 901px) {
+      .preset-row { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+      .controls { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     }
 
     .control {
@@ -590,9 +636,25 @@
       }
     }
 
-    function playFromKeyboard(event) {
-      if (event.repeat || (event.code !== 'ControlLeft' && event.code !== 'ControlRight')) return;
-      playMachine();
+    function isTypingTarget(target) {
+      return target && (
+        target.isContentEditable ||
+        ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)
+      );
+    }
+
+    function handleKeyboardShortcuts(event) {
+      if (event.repeat) return;
+
+      if (event.code === 'ControlLeft' || event.code === 'ControlRight') {
+        playMachine();
+        return;
+      }
+
+      if (!isTypingTarget(event.target) && event.key.toLowerCase() === 'r') {
+        event.preventDefault();
+        randomizeSignal();
+      }
     }
 
     function handleMidiMessage(event) {
@@ -1013,7 +1075,7 @@
     document.getElementById('savePreset').addEventListener('click', saveCurrentPreset);
     document.getElementById('refreshPresets').addEventListener('click', () => loadSharedPresets());
     document.getElementById('savedPresetSelect').addEventListener('change', e => loadSavedPreset(e.target.value));
-    window.addEventListener('keydown', playFromKeyboard);
+    window.addEventListener('keydown', handleKeyboardShortcuts);
     document.querySelectorAll('[data-preset]').forEach(btn => {
       btn.addEventListener('click', () => {
         applyPreset(btn.dataset.preset);
