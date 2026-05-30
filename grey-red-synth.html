@@ -274,6 +274,16 @@
       color: var(--muted);
       margin-top: 10px;
     }
+
+    .sync-status {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 8px;
+      min-height: 16px;
+    }
+
+    .sync-status.is-online { color: #c7b889; }
+    .sync-status.is-error { color: #d06b62; }
   </style>
 </head>
 <body>
@@ -348,7 +358,13 @@
     let pitchDownSteps = 0;
     let sharedPresets = {};
     const savedPresetKey = 'greyRedMachinePresets';
-    const sharedPresetEndpoint = 'https://api.jsonstorage.net/v1/json/radwall-grey-red/machine-presets';
+    const supabaseConfig = {
+      url: 'https://jisuwnnqfgycwlkldduy.supabase.co',
+      anonKey: 'sb_publishable_N1hALmgBI78OinIrad_XbQ_dAo4yLnq',
+      table: 'synth_presets',
+      owner: 'public'
+    };
+    const supabaseEnabled = !supabaseConfig.url.includes('YOUR-PROJECT-REF') && !supabaseConfig.anonKey.includes('YOUR-SUPABASE');
     const sharedRefreshMs = 30000;
 
     const params = {
@@ -773,10 +789,18 @@
       return record && record.params ? record.params : record;
     }
 
-    function normalizePresetResponse(data) {
-      const raw = data && data.presets ? data.presets : data;
-      if (!raw || Array.isArray(raw) || typeof raw !== 'object') return {};
-      return raw;
+    function getSupabaseHeaders(prefer = 'return=minimal') {
+      return {
+        apikey: supabaseConfig.anonKey,
+        Authorization: `Bearer ${supabaseConfig.anonKey}`,
+        'Content-Type': 'application/json',
+        Prefer: prefer
+      };
+    }
+
+    function getSupabaseTableUrl(query = '') {
+      const baseUrl = `${supabaseConfig.url.replace(/\/$/, '')}/rest/v1/${supabaseConfig.table}`;
+      return `${baseUrl}${query}`;
     }
 
     function renderSavedPresetList() {
@@ -795,17 +819,31 @@
 
     async function loadSharedPresets({ silent = false } = {}) {
       if (!silent) setPresetStatus('syncing shared presets...');
+      if (!supabaseEnabled) {
+        sharedPresets = readPresetCache();
+        renderSavedPresetList();
+        setPresetStatus('online sync unavailable; showing cached presets');
+        return;
+      }
+
       try {
-        const response = await fetch(sharedPresetEndpoint, { cache: 'no-store' });
-        if (response.status === 404) {
-          sharedPresets = {};
-          await writeSharedPresets({ silent: true });
-        } else if (!response.ok) {
-          throw new Error(`sync failed ${response.status}`);
-        } else {
-          const data = await response.json();
-          sharedPresets = normalizePresetResponse(data);
-        }
+        const query = `?owner=eq.${encodeURIComponent(supabaseConfig.owner)}&select=name,params,updated_at&order=name.asc`;
+        const response = await fetch(getSupabaseTableUrl(query), {
+          cache: 'no-store',
+          headers: getSupabaseHeaders()
+        });
+        if (!response.ok) throw new Error(`sync failed ${response.status}`);
+
+        const rows = await response.json();
+        sharedPresets = rows.reduce((collection, row) => {
+          if (row.name && row.params) {
+            collection[row.name] = {
+              params: row.params,
+              updatedAt: row.updated_at
+            };
+          }
+          return collection;
+        }, {});
         writePresetCache(sharedPresets);
         renderSavedPresetList();
         if (!silent) setPresetStatus(`online presets ready (${Object.keys(sharedPresets).length})`);
@@ -816,19 +854,18 @@
       }
     }
 
-    async function writeSharedPresets({ silent = false } = {}) {
-      const payload = {
-        updatedAt: new Date().toISOString(),
-        presets: sharedPresets
-      };
-      const response = await fetch(sharedPresetEndpoint, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+    async function writeSharedPreset(name, presetParams) {
+      const response = await fetch(getSupabaseTableUrl('?on_conflict=owner,name'), {
+        method: 'POST',
+        headers: getSupabaseHeaders('resolution=merge-duplicates,return=minimal'),
+        body: JSON.stringify({
+          owner: supabaseConfig.owner,
+          name,
+          params: presetParams,
+          updated_at: new Date().toISOString()
+        })
       });
       if (!response.ok) throw new Error(`save failed ${response.status}`);
-      writePresetCache(sharedPresets);
-      if (!silent) setPresetStatus(`saved online (${Object.keys(sharedPresets).length})`);
     }
 
     async function saveCurrentPreset() {
@@ -841,12 +878,15 @@
           params: snapshotParams(),
           updatedAt: new Date().toISOString()
         };
-        await writeSharedPresets();
+        await writeSharedPreset(name, sharedPresets[name].params);
+        writePresetCache(sharedPresets);
+        setPresetStatus(`saved online (${Object.keys(sharedPresets).length})`);
         input.value = name;
         renderSavedPresetList();
         document.getElementById('savedPresetSelect').value = name;
       } catch (error) {
-        setPresetStatus('online save failed; try refresh and save again');
+        writePresetCache(sharedPresets);
+        setPresetStatus('online save failed; saved to this browser only');
       }
     }
 
