@@ -138,9 +138,9 @@
 
     .preset-save-row {
       display: grid;
-      grid-template-columns: 1fr auto auto;
+      grid-template-columns: 1fr auto auto auto;
       gap: 10px;
-      margin-bottom: 16px;
+      margin-bottom: 8px;
     }
 
     .preset-save-row input,
@@ -155,6 +155,14 @@
 
     @media (max-width: 720px) {
       .preset-save-row { grid-template-columns: 1fr; }
+    }
+
+    .preset-status {
+      min-height: 16px;
+      margin: 0 0 16px;
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: .04em;
     }
 
     .preset-row {
@@ -287,9 +295,11 @@
         </div>
         <div class="preset-save-row">
           <input id="presetName" type="text" placeholder="preset name" maxlength="32" />
-          <button class="utility-button" id="savePreset">Save</button>
+          <button class="utility-button" id="savePreset">Save Online</button>
           <select id="savedPresetSelect" aria-label="Saved presets"></select>
+          <button class="utility-button" id="refreshPresets">Refresh</button>
         </div>
+        <div class="preset-status" id="presetStatus">online presets loading...</div>
 
         <div class="preset-row">
           <button class="preset" data-preset="beacon"><strong>Distant Beacon</strong><span>slow signal</span></button>
@@ -336,7 +346,10 @@
     let currentPreset = 'beacon';
     let pitchDownBase = null;
     let pitchDownSteps = 0;
+    let sharedPresets = {};
     const savedPresetKey = 'greyRedMachinePresets';
+    const sharedPresetEndpoint = 'https://api.jsonstorage.net/v1/json/radwall-grey-red/machine-presets';
+    const sharedRefreshMs = 30000;
 
     const params = {
       baseFreq: 82,
@@ -736,21 +749,42 @@
       playMachine();
     }
 
-    function getSavedPresets() {
-      return JSON.parse(localStorage.getItem(savedPresetKey) || '{}');
+    function setPresetStatus(message) {
+      document.getElementById('presetStatus').textContent = message;
     }
 
-    function setSavedPresets(presetsToSave) {
-      localStorage.setItem(savedPresetKey, JSON.stringify(presetsToSave));
+    function cleanPresetName(name) {
+      return name.replace(/[^a-z0-9 _.-]/gi, '').trim().slice(0, 32);
+    }
+
+    function readPresetCache() {
+      try {
+        return JSON.parse(localStorage.getItem(savedPresetKey) || '{}');
+      } catch (error) {
+        return {};
+      }
+    }
+
+    function writePresetCache(presetsToCache) {
+      localStorage.setItem(savedPresetKey, JSON.stringify(presetsToCache));
+    }
+
+    function unpackPreset(record) {
+      return record && record.params ? record.params : record;
+    }
+
+    function normalizePresetResponse(data) {
+      const raw = data && data.presets ? data.presets : data;
+      if (!raw || Array.isArray(raw) || typeof raw !== 'object') return {};
+      return raw;
     }
 
     function renderSavedPresetList() {
       const select = document.getElementById('savedPresetSelect');
-      const saved = getSavedPresets();
-      const names = Object.keys(saved).sort();
+      const names = Object.keys(sharedPresets).sort((a, b) => a.localeCompare(b));
       select.innerHTML = names.length
-        ? '<option value="">load saved...</option>'
-        : '<option value="">no saved presets</option>';
+        ? '<option value="">load shared...</option>'
+        : '<option value="">no shared presets yet</option>';
       names.forEach(name => {
         const option = document.createElement('option');
         option.value = name;
@@ -759,23 +793,69 @@
       });
     }
 
-    function saveCurrentPreset() {
+    async function loadSharedPresets({ silent = false } = {}) {
+      if (!silent) setPresetStatus('syncing shared presets...');
+      try {
+        const response = await fetch(sharedPresetEndpoint, { cache: 'no-store' });
+        if (response.status === 404) {
+          sharedPresets = {};
+          await writeSharedPresets({ silent: true });
+        } else if (!response.ok) {
+          throw new Error(`sync failed ${response.status}`);
+        } else {
+          const data = await response.json();
+          sharedPresets = normalizePresetResponse(data);
+        }
+        writePresetCache(sharedPresets);
+        renderSavedPresetList();
+        if (!silent) setPresetStatus(`online presets ready (${Object.keys(sharedPresets).length})`);
+      } catch (error) {
+        sharedPresets = readPresetCache();
+        renderSavedPresetList();
+        setPresetStatus('online sync unavailable; showing cached presets');
+      }
+    }
+
+    async function writeSharedPresets({ silent = false } = {}) {
+      const payload = {
+        updatedAt: new Date().toISOString(),
+        presets: sharedPresets
+      };
+      const response = await fetch(sharedPresetEndpoint, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!response.ok) throw new Error(`save failed ${response.status}`);
+      writePresetCache(sharedPresets);
+      if (!silent) setPresetStatus(`saved online (${Object.keys(sharedPresets).length})`);
+    }
+
+    async function saveCurrentPreset() {
       const input = document.getElementById('presetName');
-      const name = input.value.trim() || `signal-${new Date().toISOString().slice(0, 10)}`;
-      const saved = getSavedPresets();
-      saved[name] = snapshotParams();
-      setSavedPresets(saved);
-      input.value = name;
-      renderSavedPresetList();
-      document.getElementById('savedPresetSelect').value = name;
+      const name = cleanPresetName(input.value) || `signal-${new Date().toISOString().slice(0, 10)}`;
+      setPresetStatus('saving online...');
+      try {
+        await loadSharedPresets({ silent: true });
+        sharedPresets[name] = {
+          params: snapshotParams(),
+          updatedAt: new Date().toISOString()
+        };
+        await writeSharedPresets();
+        input.value = name;
+        renderSavedPresetList();
+        document.getElementById('savedPresetSelect').value = name;
+      } catch (error) {
+        setPresetStatus('online save failed; try refresh and save again');
+      }
     }
 
     function loadSavedPreset(name) {
-      const saved = getSavedPresets();
-      if (!name || !saved[name]) return;
+      const record = sharedPresets[name];
+      if (!name || !record) return;
       currentPreset = 'saved';
       resetPitchCycle();
-      restoreParams(saved[name]);
+      restoreParams(unpackPreset(record));
       document.getElementById('presetName').value = name;
       document.getElementById('savedPresetSelect').value = name;
       playMachine();
@@ -843,6 +923,7 @@
     document.getElementById('randomizeSignal').addEventListener('click', randomizeSignal);
     document.getElementById('pitchDown').addEventListener('click', pitchDownSignal);
     document.getElementById('savePreset').addEventListener('click', saveCurrentPreset);
+    document.getElementById('refreshPresets').addEventListener('click', () => loadSharedPresets());
     document.getElementById('savedPresetSelect').addEventListener('change', e => loadSavedPreset(e.target.value));
     document.querySelectorAll('[data-preset]').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -851,10 +932,13 @@
       });
     });
 
+    sharedPresets = readPresetCache();
     renderControls();
     renderSavedPresetList();
     renderNotes();
     updateRecipe();
+    loadSharedPresets();
+    window.setInterval(() => loadSharedPresets({ silent: true }), sharedRefreshMs);
   </script>
 </body>
 </html>
