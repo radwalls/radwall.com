@@ -106,12 +106,23 @@
 
     button:active { transform: translateY(0); }
 
+    .play-dock {
+      position: sticky;
+      top: 10px;
+      z-index: 20;
+      margin: -6px -6px 10px;
+      padding: 6px;
+      background: linear-gradient(180deg, rgba(27,27,29,0.98), rgba(27,27,29,0.82));
+      border-radius: 18px;
+      backdrop-filter: blur(10px);
+    }
+
     .big-play {
       width: 100%;
       font-size: 19px;
       font-weight: 700;
       padding: 18px;
-      margin-bottom: 10px;
+      margin: 0;
       border-color: #6f302c;
       background: linear-gradient(180deg, #8a2828, #401d1d);
     }
@@ -124,6 +135,7 @@
     }
 
     @media (max-width: 560px) {
+      .play-dock { top: 6px; }
       .utility-row { grid-template-columns: 1fr; }
     }
 
@@ -298,7 +310,9 @@
 
     <div class="layout">
       <section class="panel">
-        <button class="big-play" id="playMain">PLAY MACHINE PHRASE</button>
+        <div class="play-dock">
+          <button class="big-play" id="playMain">PLAY MACHINE PHRASE</button>
+        </div>
         <div class="utility-row">
           <button class="utility-button" id="randomizeSignal">Randomize Signal</button>
           <button class="utility-button" id="pitchDown">Pitch Down ×2</button>
@@ -357,6 +371,7 @@
     let pitchDownBase = null;
     let pitchDownSteps = 0;
     let sharedPresets = {};
+    let midiAccess = null;
     const savedPresetKey = 'greyRedMachinePresets';
     const supabaseConfig = {
       url: 'https://jisuwnnqfgycwlkldduy.supabase.co',
@@ -439,6 +454,10 @@
     const notes = [
       ['E2', 82.41], ['G2', 98.00], ['A2', 110.00], ['B2', 123.47], ['D3', 146.83], ['E3', 164.81], ['G3', 196.00]
     ];
+
+    function midiNoteToFrequency(noteNumber) {
+      return 440 * Math.pow(2, (noteNumber - 69) / 12);
+    }
 
     function initAudio() {
       if (audioCtx) return;
@@ -568,6 +587,35 @@
         setTimeout(() => playTone((freqOverride || params.baseFreq) * 0.84), 460);
       } else {
         playTone(freqOverride || params.baseFreq);
+      }
+    }
+
+    function playFromKeyboard(event) {
+      if (event.repeat || (event.code !== 'ControlLeft' && event.code !== 'ControlRight')) return;
+      playMachine();
+    }
+
+    function handleMidiMessage(event) {
+      const [status, noteNumber, velocity] = event.data;
+      const command = status & 0xf0;
+      const isNoteOn = command === 0x90 && velocity > 0;
+      if (isNoteOn) playMachine(midiNoteToFrequency(noteNumber));
+    }
+
+    function bindMidiInputs(access) {
+      access.inputs.forEach(input => {
+        input.onmidimessage = handleMidiMessage;
+      });
+    }
+
+    async function setupMidiControls() {
+      if (!navigator.requestMIDIAccess) return;
+      try {
+        midiAccess = await navigator.requestMIDIAccess();
+        bindMidiInputs(midiAccess);
+        midiAccess.onstatechange = () => bindMidiInputs(midiAccess);
+      } catch (error) {
+        console.warn('MIDI unavailable', error);
       }
     }
 
@@ -965,6 +1013,7 @@
     document.getElementById('savePreset').addEventListener('click', saveCurrentPreset);
     document.getElementById('refreshPresets').addEventListener('click', () => loadSharedPresets());
     document.getElementById('savedPresetSelect').addEventListener('change', e => loadSavedPreset(e.target.value));
+    window.addEventListener('keydown', playFromKeyboard);
     document.querySelectorAll('[data-preset]').forEach(btn => {
       btn.addEventListener('click', () => {
         applyPreset(btn.dataset.preset);
@@ -978,6 +1027,7 @@
     renderNotes();
     updateRecipe();
     loadSharedPresets();
+    setupMidiControls();
     window.setInterval(() => loadSharedPresets({ silent: true }), sharedRefreshMs);
   </script>
 </body>
