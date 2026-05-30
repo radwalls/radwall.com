@@ -342,6 +342,46 @@
 
     .sync-status.is-online { color: #c7b889; }
     .sync-status.is-error { color: #d06b62; }
+/* FIX: restore normal up/down page scrolling */
+@media (min-width: 901px) {
+  body {
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  main {
+    min-height: 100vh;
+    height: auto;
+  }
+
+  .layout {
+    min-height: auto;
+  }
+
+  .panel {
+    overflow-y: visible;
+  }
+}
+      /* FIX: restore normal up/down page scrolling */
+      @media (min-width: 901px) {
+          body {
+              overflow-y: auto;
+              overflow-x: hidden;
+          }
+
+          main {
+              min-height: 100vh;
+              height: auto;
+          }
+
+          .layout {
+              min-height: auto;
+          }
+
+          .panel {
+              overflow-y: visible;
+          }
+      }
   </style>
 </head>
 <body>
