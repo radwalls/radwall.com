@@ -27,6 +27,18 @@
         .coaching-links { display:flex; flex-wrap:wrap; justify-content:center; gap:15px; margin-top:10px; }
         .coaching-link { background:linear-gradient(135deg, #ffd166, #ef476f); color:#000; font-weight:bold; padding:12px 22px; border-radius:30px; text-decoration:none; transition:transform 0.2s ease, box-shadow 0.2s ease; }
         .coaching-link:hover { transform:translateY(-3px); box-shadow:0 10px 20px rgba(239,71,111,0.45); }
+
+        .coming-soon-section { width:100%; display:flex; flex-direction:column; align-items:center; gap:20px; padding:20px; box-sizing:border-box; }
+        .coming-soon-section h2 { color:#b43a35; letter-spacing:1px; text-transform:uppercase; }
+        .project-grey-card { width:180px; height:180px; background:linear-gradient(160deg, #080808 0%, #343232 48%, #8b2424 49%, #1b0909 70%, #080808 100%); border:1px solid rgba(209,75,63,0.35); overflow:hidden; }
+        .project-grey-card::before { content:'Project Grey Red'; position:absolute; inset:auto 10px 12px 10px; color:#e8e2dc; font-size:14px; font-weight:bold; letter-spacing:1px; text-transform:uppercase; text-shadow:0 2px 8px #000; z-index:1; }
+        .project-grey-card::after { content:''; position:absolute; left:-20%; right:-20%; bottom:42%; height:10px; background:rgba(209,75,63,0.65); box-shadow:0 0 30px rgba(209,75,63,0.6); transform:rotate(-3deg); }
+        .placeholder-artwork { width:280px; height:280px; border-radius:12px; background:linear-gradient(160deg, #070707 0%, #2a2a2c 43%, #b43a35 44%, #4b1111 56%, #0a0a0b 100%); border:1px solid rgba(209,75,63,0.45); box-shadow:0 0 35px rgba(0,0,0,0.65), inset 0 0 70px rgba(0,0,0,0.55); position:relative; overflow:hidden; display:flex; align-items:flex-end; justify-content:center; padding:24px; color:#e8e2dc; font-weight:bold; letter-spacing:2px; text-transform:uppercase; }
+        .placeholder-artwork::before { content:''; position:absolute; left:-15%; right:-15%; bottom:47%; height:14px; background:rgba(209,75,63,0.75); box-shadow:0 0 40px rgba(209,75,63,0.75); transform:rotate(-2deg); }
+        .placeholder-artwork::after { content:'Black sand / red horizon'; position:absolute; top:18px; right:18px; color:rgba(232,226,220,0.45); font-size:11px; letter-spacing:1px; }
+        .grey-red-poem { text-align:left; white-space:pre-line; border-color:rgba(180,58,53,0.45); }
+        .hidden-synth-button { opacity:0.38; transform:scale(0.92); background:linear-gradient(180deg, #332424, #151515); border:1px dashed rgba(209,75,63,0.55); color:#cdbdb5; font-size:12px; letter-spacing:1px; text-transform:uppercase; }
+        .hidden-synth-button:hover { opacity:1; transform:scale(1); background:linear-gradient(180deg, #552929, #241717); }
      .album-page {
     display: none;
     flex-direction: column;
@@ -227,6 +239,13 @@
         <div class="ep-row">
             <div class="ep-card" onclick="openAlbumPage('ep1','sand')"><img src="ep-roads-of-oil-cover.jpg" alt="Roads of Oil"></div>
         </div>
+
+ <div class="divider"></div>
+        <div class="coming-soon-section">
+            <h2>Coming Soon</h2>
+            <div class="album project-grey-card" onclick="openAlbumPage('grey-red','grey-red','linear-gradient(145deg, rgba(6,6,6,0.96), rgba(34,34,36,0.94) 48%, rgba(110,24,24,0.92))')" aria-label="Open Project Grey Red"></div>
+        </div>
+
  <div class="divider"></div>
         <div class="coaching-section">
             <h2>Vocal Coaching</h2>
@@ -316,6 +335,29 @@
         <div class="album-cover-container">
             <img src="ep-roads-of-oil-cover.jpg" alt="Roads of Oil Cover" class="album-cover">
         </div>
+    </div>
+
+
+    <div id="grey-red" class="album-page">
+        <h1>Project Grey Red</h1>
+        <div class="placeholder-artwork">Project Grey Red</div>
+        <p class="album-info grey-red-poem">Grey Red
+
+A red horizon.
+
+Black sand.
+
+A machine wakes beneath a torn military tarp.
+
+Old steel moves again. Triumph over the machines.
+
+The lock-on tone cuts through the wind.
+
+Something larger answers from the dust.</p>
+        <p class="album-info">A coming-soon album space for the Grey Red world. New pictures can be synced into the <code>grey-red/</code> folder as they are created.</p>
+        <a href="blog/grey-red-progress.html" class="gallery-button">Progress Blog</a>
+        <a href="grey-red-synth.html" class="gallery-button hidden-synth-button">Hidden Machine Synth</a>
+        <button class="back-button" onclick="closeAlbumPage('grey-red')">Back</button>
     </div>
 
     <!-- Gallery Modals -->
@@ -489,7 +531,7 @@
             particlesJS('particles-js', {
                 particles: {
                     number: { value: 80, density: { enable: true, value_area: 700 } },
-                    color: { value: effect === 'sand' ? '#d2b48c' : effect === 'distort' ? '#ff0000' : effect === 'vocal' ? '#ffd166' : '#00bfff' },
+                    color: { value: effect === 'sand' ? '#d2b48c' : effect === 'distort' ? '#ff0000' : effect === 'vocal' ? '#ffd166' : effect === 'grey-red' ? '#b43a35' : '#00bfff' },
                     shape: { type: 'circle' },
                     opacity: { value: 0.5 },
                     size: { value: 4, random: true },
