@@ -136,6 +136,27 @@
       text-transform: uppercase;
     }
 
+    .preset-save-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .preset-save-row input,
+    .preset-save-row select {
+      min-width: 0;
+      background: #141414;
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px;
+    }
+
+    @media (max-width: 720px) {
+      .preset-save-row { grid-template-columns: 1fr; }
+    }
+
     .preset-row {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -264,14 +285,19 @@
           <button class="utility-button" id="randomizeSignal">Randomize Signal</button>
           <button class="utility-button" id="pitchDown">Pitch Down ×2</button>
         </div>
+        <div class="preset-save-row">
+          <input id="presetName" type="text" placeholder="preset name" maxlength="32" />
+          <button class="utility-button" id="savePreset">Save</button>
+          <select id="savedPresetSelect" aria-label="Saved presets"></select>
+        </div>
 
         <div class="preset-row">
-          <button class="preset" data-preset="beacon"><strong>Distant Beacon</strong><span>Melancholic failed signal / wandering mech</span></button>
-          <button class="preset" data-preset="sword"><strong>Ancient Sword Swing</strong><span>Rough King’s Field-style sweep</span></button>
-          <button class="preset" data-preset="reactor"><strong>Reactor Cough</strong><span>Low distorted machine breath</span></button>
-          <button class="preset" data-preset="lock"><strong>Lock-On Ghost</strong><span>Broken targeting tone that collapses</span></button>
-          <button class="preset" data-preset="gundam"><strong>Old Anime Power-Up</strong><span>Rising FM scream with dirt</span></button>
-          <button class="preset" data-preset="servo"><strong>Servo Twitch</strong><span>Short mechanical stab / transition hit</span></button>
+          <button class="preset" data-preset="beacon"><strong>Distant Beacon</strong><span>slow signal</span></button>
+          <button class="preset" data-preset="sword"><strong>Ancient Sword Swing</strong><span>bright steel sweep</span></button>
+          <button class="preset" data-preset="reactor"><strong>Reactor Cough</strong><span>low engine hit</span></button>
+          <button class="preset" data-preset="lock"><strong>Lock-On Ghost</strong><span>broken target beep</span></button>
+          <button class="preset" data-preset="gundam"><strong>Old Anime Power-Up</strong><span>rising charge</span></button>
+          <button class="preset" data-preset="servo"><strong>Servo Twitch</strong><span>short metal jab</span></button>
         </div>
 
         <h2 class="section-title">Sound Controls</h2>
@@ -288,7 +314,7 @@
         <h2 class="section-title">Current Recipe</h2>
         <div class="recipe" id="recipe"></div>
         <div class="small">
-          Tip: screen-record or route system audio into Logic. Then chop the best moments, reverse them, pitch them down, and place them between guitar or synth phrases.
+          Tip: record a few passes, keep the strange parts, reverse one, then bury it under the next section.
         </div>
       </aside>
     </div>
@@ -308,6 +334,9 @@
     let filter;
     let bitCrusher;
     let currentPreset = 'beacon';
+    let pitchDownBase = null;
+    let pitchDownSteps = 0;
+    const savedPresetKey = 'greyRedMachinePresets';
 
     const params = {
       baseFreq: 82,
@@ -332,32 +361,32 @@
       beacon: {
         baseFreq: 73, modRatio: 1.51, modIndex: 130, sweep: 5, sweepTime: 2.6, attack: 0.18, decay: 2.8,
         noise: 0.16, distortion: 280, crush: 0.28, filterFreq: 720, resonance: 12, delayMix: 0.22, volume: 0.48, mode: 'rise', reverb: 'bunker',
-        recipe: 'Distant Beacon\nSlow FM rise, narrow resonant filter, soft bitcrush, and delayed ghost tail. Use between melodies like the mech is calling through sand and static.'
+        recipe: 'Distant Beacon\nSlow signal. Sand in the tail.'
       },
       sword: {
-        baseFreq: 220, modRatio: 3.02, modIndex: 520, sweep: -19, sweepTime: 0.42, attack: 0.005, decay: 0.55,
-        noise: 0.24, distortion: 820, crush: 0.62, filterFreq: 1900, resonance: 16, delayMix: 0.06, volume: 0.58, mode: 'fall', reverb: 'scorched',
-        recipe: 'Ancient Sword Swing\nFast pitch fall, aggressive FM clang, noise bite, heavy distortion. Good for a rusty energy blade or PS1 cursed sword movement.'
+        baseFreq: 260, modRatio: 2.42, modIndex: 430, sweep: -14, sweepTime: 0.72, attack: 0.004, decay: 0.95,
+        noise: 0.16, distortion: 620, crush: 0.32, filterFreq: 3600, resonance: 8, delayMix: 0.1, volume: 0.62, mode: 'fall', reverb: 'scorched',
+        recipe: 'Ancient Sword Swing\nBright fall. Longer blade trail.'
       },
       reactor: {
         baseFreq: 41, modRatio: 0.51, modIndex: 340, sweep: -5, sweepTime: 1.1, attack: 0.03, decay: 1.25,
         noise: 0.35, distortion: 980, crush: 0.55, filterFreq: 380, resonance: 7, delayMix: 0.03, volume: 0.7, mode: 'fall', reverb: 'cavern',
-        recipe: 'Reactor Cough\nLow FM core, extra noise, crushed distortion, darker filter. Use under chord changes or before a heavy section as the mech tries to restart.'
+        recipe: 'Reactor Cough\nLow burst. Bad engine.'
       },
       lock: {
         baseFreq: 164, modRatio: 2.0, modIndex: 90, sweep: 7, sweepTime: 0.22, attack: 0.004, decay: 0.28,
         noise: 0.08, distortion: 400, crush: 0.48, filterFreq: 2400, resonance: 18, delayMix: 0.18, volume: 0.42, mode: 'pulse', reverb: 'colony',
-        recipe: 'Lock-On Ghost\nShort repeating FM blips with unstable pitch. Record several taps, then chop into failed targeting UI noises.'
+        recipe: 'Lock-On Ghost\nThree haunted pings.'
       },
       gundam: {
         baseFreq: 98, modRatio: 2.98, modIndex: 620, sweep: 24, sweepTime: 1.05, attack: 0.01, decay: 1.25,
         noise: 0.2, distortion: 760, crush: 0.5, filterFreq: 1600, resonance: 14, delayMix: 0.1, volume: 0.57, mode: 'rise', reverb: 'scorched',
-        recipe: 'Old Anime Power-Up\nBig rising FM bend, saw-like harmonic density, noise and bitcrush. Make it less heroic by lowering volume and adding more reverb later in Logic.'
+        recipe: 'Old Anime Power-Up\nRising charge. Dirty top end.'
       },
       servo: {
         baseFreq: 132, modRatio: 4.04, modIndex: 700, sweep: -12, sweepTime: 0.12, attack: 0.001, decay: 0.16,
         noise: 0.3, distortion: 900, crush: 0.7, filterFreq: 2600, resonance: 11, delayMix: 0.04, volume: 0.5, mode: 'fall', reverb: 'off',
-        recipe: 'Servo Twitch\nTiny violent FM stab. Use as rhythmic detail, like leg hydraulics locking or armor plates shifting.'
+        recipe: 'Servo Twitch\nSmall metal snap.'
       }
     };
 
@@ -571,9 +600,26 @@
       updateReverb();
     }
 
+    function snapshotParams() {
+      return { ...params };
+    }
+
+    function restoreParams(saved) {
+      Object.assign(params, saved);
+      renderControls();
+      updateRecipe();
+      updateAudioParams();
+    }
+
+    function resetPitchCycle() {
+      pitchDownBase = null;
+      pitchDownSteps = 0;
+    }
+
     function applyPreset(name) {
       currentPreset = name;
       Object.assign(params, presets[name]);
+      resetPitchCycle();
       renderControls();
       updateRecipe();
       updateAudioParams();
@@ -655,6 +701,7 @@
       params.mode = ['rise', 'fall', 'pulse'][Math.floor(Math.random() * 3)];
       params.reverb = ['off', 'bunker', 'scorched', 'cavern', 'colony'][Math.floor(Math.random() * 5)];
       currentPreset = 'random';
+      resetPitchCycle();
       renderControls();
       updateRecipe();
       updateAudioParams();
@@ -662,14 +709,75 @@
     }
 
     function pitchDownSignal() {
-      params.baseFreq = Math.max(30, Number((params.baseFreq / 2).toFixed(2)));
-      params.modIndex = Math.min(1200, Math.round(params.modIndex * 1.12));
-      params.filterFreq = Math.max(120, Math.round(params.filterFreq * 0.62));
-      params.decay = Math.min(5, Number((params.decay * 1.18).toFixed(2)));
+      if (!pitchDownBase) {
+        pitchDownBase = snapshotParams();
+        pitchDownSteps = 0;
+      }
+
+      pitchDownSteps += 1;
+      if (pitchDownSteps > 3) {
+        restoreParams(pitchDownBase);
+        resetPitchCycle();
+        currentPreset = 'pitchReset';
+        updateRecipe();
+        playMachine();
+        return;
+      }
+
+      const divisor = Math.pow(2, pitchDownSteps);
+      params.baseFreq = Math.max(30, Number((pitchDownBase.baseFreq / divisor).toFixed(2)));
+      params.modIndex = Math.min(1200, Math.round(pitchDownBase.modIndex * (1 + pitchDownSteps * 0.08)));
+      params.filterFreq = Math.max(120, Math.round(pitchDownBase.filterFreq * Math.pow(0.68, pitchDownSteps)));
+      params.decay = Math.min(5, Number((pitchDownBase.decay * (1 + pitchDownSteps * 0.15)).toFixed(2)));
       currentPreset = 'pitchedDown';
       renderControls();
       updateRecipe();
       updateAudioParams();
+      playMachine();
+    }
+
+    function getSavedPresets() {
+      return JSON.parse(localStorage.getItem(savedPresetKey) || '{}');
+    }
+
+    function setSavedPresets(presetsToSave) {
+      localStorage.setItem(savedPresetKey, JSON.stringify(presetsToSave));
+    }
+
+    function renderSavedPresetList() {
+      const select = document.getElementById('savedPresetSelect');
+      const saved = getSavedPresets();
+      const names = Object.keys(saved).sort();
+      select.innerHTML = names.length
+        ? '<option value="">load saved...</option>'
+        : '<option value="">no saved presets</option>';
+      names.forEach(name => {
+        const option = document.createElement('option');
+        option.value = name;
+        option.textContent = name;
+        select.appendChild(option);
+      });
+    }
+
+    function saveCurrentPreset() {
+      const input = document.getElementById('presetName');
+      const name = input.value.trim() || `signal-${new Date().toISOString().slice(0, 10)}`;
+      const saved = getSavedPresets();
+      saved[name] = snapshotParams();
+      setSavedPresets(saved);
+      input.value = name;
+      renderSavedPresetList();
+      document.getElementById('savedPresetSelect').value = name;
+    }
+
+    function loadSavedPreset(name) {
+      const saved = getSavedPresets();
+      if (!name || !saved[name]) return;
+      currentPreset = 'saved';
+      resetPitchCycle();
+      restoreParams(saved[name]);
+      document.getElementById('presetName').value = name;
+      document.getElementById('savedPresetSelect').value = name;
       playMachine();
     }
 
@@ -687,8 +795,10 @@
 
     function updateRecipe() {
       const customRecipes = {
-        random: 'Randomized Signal\nA newly scavenged machine voice: unstable pitch, altered drive, and a reverb space selected from the empire chain.',
-        pitchedDown: 'Pitch Down ×2\nThe same machine dragged under black sand: lower core frequency, darker filter, longer decay, and heavier FM pressure.'
+        random: 'Randomized Signal\nNew settings. Unknown machine.',
+        pitchedDown: 'Pitch Down ×2\nLower pass. Press again to keep falling.',
+        pitchReset: 'Pitch Reset\nBack where it started.',
+        saved: 'Saved Preset\nLoaded from this browser.'
       };
       document.getElementById('recipe').textContent = customRecipes[currentPreset] || presets[currentPreset].recipe;
     }
@@ -732,6 +842,8 @@
     document.getElementById('playMain').addEventListener('click', () => playMachine());
     document.getElementById('randomizeSignal').addEventListener('click', randomizeSignal);
     document.getElementById('pitchDown').addEventListener('click', pitchDownSignal);
+    document.getElementById('savePreset').addEventListener('click', saveCurrentPreset);
+    document.getElementById('savedPresetSelect').addEventListener('change', e => loadSavedPreset(e.target.value));
     document.querySelectorAll('[data-preset]').forEach(btn => {
       btn.addEventListener('click', () => {
         applyPreset(btn.dataset.preset);
@@ -740,6 +852,7 @@
     });
 
     renderControls();
+    renderSavedPresetList();
     renderNotes();
     updateRecipe();
   </script>
