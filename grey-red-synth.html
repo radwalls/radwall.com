@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Grey Red FM Machine Synth</title>
+  <style>
+    :root {
+      --bg: #111111;
+      --panel: #1b1b1d;
+      --panel2: #242426;
+      --text: #e8e2dc;
+      --muted: #a89f98;
+      --red: #9f2b2b;
+      --red2: #d14b3f;
+      --line: #333336;
+      --sand: #9a8670;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 20% 10%, rgba(150, 30, 30, 0.18), transparent 30%),
+        linear-gradient(145deg, #090909, #171717 55%, #231414);
+    }
+
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 28px;
+    }
+
+    header {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 22px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(30px, 5vw, 58px);
+      letter-spacing: -2px;
+      line-height: 0.95;
+    }
+
+    .subtitle {
+      max-width: 850px;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.55;
+    }
+
+    .home-link {
+      color: var(--sand);
+      text-decoration: none;
+      font-size: 13px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 18px;
+    }
+
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+
+    .panel {
+      background: rgba(27, 27, 29, 0.92);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 18px;
+      box-shadow: 0 22px 80px rgba(0,0,0,0.4);
+    }
+
+    .section-title {
+      margin: 0 0 14px 0;
+      font-size: 18px;
+      color: #fff;
+    }
+
+    button {
+      border: 1px solid #4a3434;
+      background: linear-gradient(180deg, #3a2323, #231b1b);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: transform .08s ease, border-color .15s ease, background .15s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      border-color: var(--red2);
+      background: linear-gradient(180deg, #552929, #2b2020);
+    }
+
+    button:active { transform: translateY(0); }
+
+    .big-play {
+      width: 100%;
+      font-size: 19px;
+      font-weight: 700;
+      padding: 18px;
+      margin-bottom: 10px;
+      border-color: #6f302c;
+      background: linear-gradient(180deg, #8a2828, #401d1d);
+    }
+
+    .utility-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 560px) {
+      .utility-row { grid-template-columns: 1fr; }
+    }
+
+    .utility-button {
+      background: #171717;
+      border-color: #36302f;
+      color: var(--sand);
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .preset-save-row {
+      display: grid;
+      grid-template-columns: minmax(120px, 1fr) auto auto minmax(180px, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .preset-save-row input,
+    .preset-save-row select {
+      min-width: 0;
+      background: #141414;
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px;
+    }
+
+    @media (max-width: 720px) {
+      .preset-save-row { grid-template-columns: 1fr; }
+    }
+
+    .sync-status {
+      margin: -6px 0 16px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .sync-status.good { color: #c6b59e; }
+    .sync-status.bad { color: #d1847c; }
+
+    .preset-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    @media (max-width: 650px) {
+      .preset-row { grid-template-columns: 1fr; }
+    }
+
+    .preset {
+      text-align: left;
+      background: #201f20;
+      border: 1px solid #3d3a39;
+    }
+
+    .preset strong { display: block; margin-bottom: 4px; color: #fff; }
+    .preset span { color: var(--muted); font-size: 12px; line-height: 1.35; }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    @media (max-width: 650px) {
+      .controls { grid-template-columns: 1fr; }
+    }
+
+    .control {
+      background: var(--panel2);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px;
+    }
+
+    label {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .value {
+      color: var(--sand);
+      font-variant-numeric: tabular-nums;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--red2);
+    }
+
+    select {
+      width: 100%;
+      background: #141414;
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px;
+    }
+
+    .meter {
+      height: 140px;
+      width: 100%;
+      background: #090909;
+      border-radius: 16px;
+      border: 1px solid #2e2e31;
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+
+    canvas { width: 100%; height: 100%; display: block; }
+
+    .note-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .note {
+      padding: 14px 8px;
+      border-radius: 12px;
+      background: #171717;
+      border: 1px solid #373737;
+      text-align: center;
+      font-weight: 700;
+    }
+
+    .recipe {
+      background: #111;
+      border: 1px solid #383333;
+      border-radius: 16px;
+      padding: 14px;
+      color: #ddd5ce;
+      line-height: 1.55;
+      font-size: 14px;
+      white-space: pre-wrap;
+    }
+
+    .small {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <a class="home-link" href="index.html">← Back to Radwalls</a>
+      <h1>Grey Red FM Machine Synth</h1>
+      <div class="subtitle">
+        The dying cries of the Greiearth can be constructed and found here, salvaged by a simple twist of the knobs that control the constantly evolving empires and the sunken scorched lands.
+      </div>
+    </header>
+
+    <div class="layout">
+      <section class="panel">
+        <button class="big-play" id="playMain">PLAY MACHINE PHRASE</button>
+        <div class="utility-row">
+          <button class="utility-button" id="randomizeSignal">Randomize Signal</button>
+          <button class="utility-button" id="pitchDown">Pitch Down ×2</button>
+        </div>
+        <div class="preset-save-row">
+          <input id="presetName" type="text" placeholder="preset name" maxlength="32" />
+          <button class="utility-button" id="savePreset">Save Global</button>
+          <button class="utility-button" id="refreshPresets">Refresh</button>
+          <select id="savedPresetSelect" aria-label="Community presets"></select>
+        </div>
+        <div class="sync-status" id="syncStatus">Community presets load here.</div>
+
+        <div class="preset-row">
+          <button class="preset" data-preset="beacon"><strong>Distant Beacon</strong><span>slow signal</span></button>
+          <button class="preset" data-preset="sword"><strong>Ancient Sword Swing</strong><span>bright steel sweep</span></button>
+          <button class="preset" data-preset="reactor"><strong>Reactor Cough</strong><span>low engine hit</span></button>
+          <button class="preset" data-preset="lock"><strong>Lock-On Ghost</strong><span>broken target beep</span></button>
+          <button class="preset" data-preset="gundam"><strong>Old Anime Power-Up</strong><span>rising charge</span></button>
+          <button class="preset" data-preset="servo"><strong>Servo Twitch</strong><span>short metal jab</span></button>
+        </div>
+
+        <h2 class="section-title">Sound Controls</h2>
+        <div class="controls" id="controls"></div>
+
+        <h2 class="section-title" style="margin-top:18px;">Play Notes</h2>
+        <div class="note-grid" id="noteGrid"></div>
+      </section>
+
+      <aside class="panel">
+        <h2 class="section-title">Signal View</h2>
+        <div class="meter"><canvas id="scope" width="800" height="260"></canvas></div>
+
+        <h2 class="section-title">Current Recipe</h2>
+        <div class="recipe" id="recipe"></div>
+        <div class="small">
+          Tip: record a few passes, keep the strange parts, reverse one, then bury it under the next section.
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    let audioCtx;
+    let analyser;
+    let masterGain;
+    let shaper;
+    let delay;
+    let delayFeedback;
+    let delayWet;
+    let reverb;
+    let reverbWet;
+    let reverbDry;
+    let filter;
+    let bitCrusher;
+    let currentPreset = 'beacon';
+    let pitchDownBase = null;
+    let pitchDownSteps = 0;
+    const localPresetBackupKey = 'greyRedMachinePresetBackups';
+    const communityPresetCloud = {
+      // Fill these in with a Supabase project to make presets shared by everyone.
+      // Table: grey_red_presets (id uuid, name text, params jsonb, created_at timestamptz)
+      supabaseUrl: '',
+      supabaseAnonKey: '',
+      table: 'grey_red_presets'
+    };
+
+    const params = {
+      baseFreq: 82,
+      modRatio: 2.01,
+      modIndex: 240,
+      sweep: 12,
+      sweepTime: 1.2,
+      attack: 0.02,
+      decay: 1.6,
+      noise: 0.18,
+      distortion: 520,
+      crush: 0.42,
+      filterFreq: 900,
+      resonance: 9,
+      delayMix: 0.12,
+      volume: 0.55,
+      mode: 'rise',
+      reverb: 'bunker'
+    };
+
+    const presets = {
+      beacon: {
+        baseFreq: 73, modRatio: 1.51, modIndex: 130, sweep: 5, sweepTime: 2.6, attack: 0.18, decay: 2.8,
+        noise: 0.16, distortion: 280, crush: 0.28, filterFreq: 720, resonance: 12, delayMix: 0.22, volume: 0.48, mode: 'rise', reverb: 'bunker',
+        recipe: 'Distant Beacon\nSlow signal. Sand in the tail.'
+      },
+      sword: {
+        baseFreq: 260, modRatio: 2.42, modIndex: 430, sweep: -14, sweepTime: 0.72, attack: 0.004, decay: 0.95,
+        noise: 0.16, distortion: 620, crush: 0.32, filterFreq: 3600, resonance: 8, delayMix: 0.1, volume: 0.62, mode: 'fall', reverb: 'scorched',
+        recipe: 'Ancient Sword Swing\nBright fall. Longer blade trail.'
+      },
+      reactor: {
+        baseFreq: 41, modRatio: 0.51, modIndex: 340, sweep: -5, sweepTime: 1.1, attack: 0.03, decay: 1.25,
+        noise: 0.35, distortion: 980, crush: 0.55, filterFreq: 380, resonance: 7, delayMix: 0.03, volume: 0.7, mode: 'fall', reverb: 'cavern',
+        recipe: 'Reactor Cough\nLow burst. Bad engine.'
+      },
+      lock: {
+        baseFreq: 164, modRatio: 2.0, modIndex: 90, sweep: 7, sweepTime: 0.22, attack: 0.004, decay: 0.28,
+        noise: 0.08, distortion: 400, crush: 0.48, filterFreq: 2400, resonance: 18, delayMix: 0.18, volume: 0.42, mode: 'pulse', reverb: 'colony',
+        recipe: 'Lock-On Ghost\nThree haunted pings.'
+      },
+      gundam: {
+        baseFreq: 98, modRatio: 2.98, modIndex: 620, sweep: 24, sweepTime: 1.05, attack: 0.01, decay: 1.25,
+        noise: 0.2, distortion: 760, crush: 0.5, filterFreq: 1600, resonance: 14, delayMix: 0.1, volume: 0.57, mode: 'rise', reverb: 'scorched',
+        recipe: 'Old Anime Power-Up\nRising charge. Dirty top end.'
+      },
+      servo: {
+        baseFreq: 132, modRatio: 4.04, modIndex: 700, sweep: -12, sweepTime: 0.12, attack: 0.001, decay: 0.16,
+        noise: 0.3, distortion: 900, crush: 0.7, filterFreq: 2600, resonance: 11, delayMix: 0.04, volume: 0.5, mode: 'fall', reverb: 'off',
+        recipe: 'Servo Twitch\nSmall metal snap.'
+      }
+    };
+
+    const controlDefs = [
+      ['baseFreq', 'Base Frequency', 30, 440, 1],
+      ['modRatio', 'FM Ratio', 0.25, 8, 0.01],
+      ['modIndex', 'FM Violence', 0, 1200, 1],
+      ['sweep', 'Pitch Sweep Semitones', -36, 36, 1],
+      ['sweepTime', 'Sweep Time', 0.05, 4, 0.01],
+      ['attack', 'Attack', 0.001, 1, 0.001],
+      ['decay', 'Decay', 0.05, 5, 0.01],
+      ['noise', 'Noise Layer', 0, 0.8, 0.01],
+      ['distortion', 'Distortion', 0, 1200, 1],
+      ['crush', 'Digital Crush', 0, 0.95, 0.01],
+      ['filterFreq', 'Filter Frequency', 120, 6000, 1],
+      ['resonance', 'Filter Resonance', 0.1, 30, 0.1],
+      ['delayMix', 'Delay Ghost', 0, 0.5, 0.01],
+      ['volume', 'Volume', 0, 1, 0.01]
+    ];
+
+    const notes = [
+      ['E2', 82.41], ['G2', 98.00], ['A2', 110.00], ['B2', 123.47], ['D3', 146.83], ['E3', 164.81], ['G3', 196.00]
+    ];
+
+    function initAudio() {
+      if (audioCtx) return;
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+      masterGain = audioCtx.createGain();
+      masterGain.gain.value = params.volume;
+
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 2048;
+
+      filter = audioCtx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.value = params.filterFreq;
+      filter.Q.value = params.resonance;
+
+      shaper = audioCtx.createWaveShaper();
+      shaper.curve = makeDistortionCurve(params.distortion);
+      shaper.oversample = '2x';
+
+      bitCrusher = audioCtx.createScriptProcessor(4096, 1, 1);
+      let phase = 0;
+      let last = 0;
+      bitCrusher.onaudioprocess = function(e) {
+        const input = e.inputBuffer.getChannelData(0);
+        const output = e.outputBuffer.getChannelData(0);
+        const crush = params.crush;
+        const step = Math.pow(0.5, 4 + Math.floor((1 - crush) * 10));
+        const holdRate = 1 + Math.floor(crush * 38);
+        for (let i = 0; i < input.length; i++) {
+          phase++;
+          if (phase >= holdRate) {
+            phase = 0;
+            last = step * Math.floor(input[i] / step + 0.5);
+          }
+          output[i] = last;
+        }
+      };
+
+      delay = audioCtx.createDelay(1.0);
+      delay.delayTime.value = 0.18;
+      delayFeedback = audioCtx.createGain();
+      delayFeedback.gain.value = 0.28;
+      delayWet = audioCtx.createGain();
+      delayWet.gain.value = params.delayMix;
+
+      reverb = audioCtx.createConvolver();
+      reverbWet = audioCtx.createGain();
+      reverbDry = audioCtx.createGain();
+
+      delay.connect(delayFeedback);
+      delayFeedback.connect(delay);
+      delay.connect(delayWet);
+
+      filter.connect(shaper);
+      shaper.connect(bitCrusher);
+      bitCrusher.connect(masterGain);
+      bitCrusher.connect(delay);
+      delayWet.connect(masterGain);
+      masterGain.connect(reverbDry);
+      masterGain.connect(reverb);
+      reverb.connect(reverbWet);
+      reverbDry.connect(analyser);
+      reverbWet.connect(analyser);
+      analyser.connect(audioCtx.destination);
+
+      updateReverb();
+      drawScope();
+    }
+
+    function makeDistortionCurve(amount) {
+      const n = 44100;
+      const curve = new Float32Array(n);
+      const deg = Math.PI / 180;
+      const k = amount;
+      for (let i = 0; i < n; ++i) {
+        const x = i * 2 / n - 1;
+        curve[i] = (3 + k) * x * 20 * deg / (Math.PI + k * Math.abs(x));
+      }
+      return curve;
+    }
+
+    function noiseBuffer(duration) {
+      const buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * duration, audioCtx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+      return buffer;
+    }
+
+    function makeImpulse(duration, decay) {
+      const length = Math.max(1, Math.floor(audioCtx.sampleRate * duration));
+      const impulse = audioCtx.createBuffer(2, length, audioCtx.sampleRate);
+      for (let channel = 0; channel < impulse.numberOfChannels; channel++) {
+        const data = impulse.getChannelData(channel);
+        for (let i = 0; i < length; i++) {
+          const fade = Math.pow(1 - i / length, decay);
+          data[i] = (Math.random() * 2 - 1) * fade;
+        }
+      }
+      return impulse;
+    }
+
+    function updateReverb() {
+      if (!audioCtx || !reverbWet || !reverbDry) return;
+      const spaces = {
+        off: { duration: 0.08, decay: 1, wet: 0, dry: 1 },
+        bunker: { duration: 1.2, decay: 2.4, wet: 0.18, dry: 0.86 },
+        scorched: { duration: 2.1, decay: 2.1, wet: 0.26, dry: 0.78 },
+        cavern: { duration: 3.4, decay: 2.8, wet: 0.32, dry: 0.72 },
+        colony: { duration: 1.75, decay: 1.45, wet: 0.22, dry: 0.82 }
+      };
+      const space = spaces[params.reverb] || spaces.bunker;
+      reverb.buffer = makeImpulse(space.duration, space.decay);
+      reverbWet.gain.value = space.wet;
+      reverbDry.gain.value = space.dry;
+    }
+
+    function playMachine(freqOverride) {
+      initAudio();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+
+      updateAudioParams();
+
+      if (params.mode === 'pulse') {
+        playTone(freqOverride || params.baseFreq);
+        setTimeout(() => playTone((freqOverride || params.baseFreq) * 1.12), 230);
+        setTimeout(() => playTone((freqOverride || params.baseFreq) * 0.84), 460);
+      } else {
+        playTone(freqOverride || params.baseFreq);
+      }
+    }
+
+    function playTone(baseFreq) {
+      const now = audioCtx.currentTime;
+      const duration = Math.max(params.decay + params.attack + 0.2, params.sweepTime + 0.2);
+
+      const carrier = audioCtx.createOscillator();
+      const mod = audioCtx.createOscillator();
+      const modGain = audioCtx.createGain();
+      const amp = audioCtx.createGain();
+      const noise = audioCtx.createBufferSource();
+      const noiseGain = audioCtx.createGain();
+
+      carrier.type = 'sine';
+      mod.type = 'sine';
+
+      const startFreq = baseFreq;
+      const endFreq = baseFreq * Math.pow(2, params.sweep / 12);
+      carrier.frequency.setValueAtTime(startFreq, now);
+      carrier.frequency.exponentialRampToValueAtTime(Math.max(20, endFreq), now + params.sweepTime);
+
+      mod.frequency.setValueAtTime(startFreq * params.modRatio, now);
+      mod.frequency.exponentialRampToValueAtTime(Math.max(20, endFreq * params.modRatio), now + params.sweepTime);
+
+      modGain.gain.setValueAtTime(params.modIndex, now);
+      modGain.gain.exponentialRampToValueAtTime(Math.max(1, params.modIndex * 0.18), now + duration);
+
+      amp.gain.setValueAtTime(0.0001, now);
+      amp.gain.exponentialRampToValueAtTime(1.0, now + params.attack);
+      amp.gain.exponentialRampToValueAtTime(0.0001, now + params.attack + params.decay);
+
+      noise.buffer = noiseBuffer(duration);
+      noiseGain.gain.setValueAtTime(params.noise, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + params.attack + params.decay);
+
+      mod.connect(modGain);
+      modGain.connect(carrier.frequency);
+      carrier.connect(amp);
+      noise.connect(noiseGain);
+      amp.connect(filter);
+      noiseGain.connect(filter);
+
+      carrier.start(now);
+      mod.start(now);
+      noise.start(now);
+      carrier.stop(now + duration);
+      mod.stop(now + duration);
+      noise.stop(now + duration);
+    }
+
+    function updateAudioParams() {
+      if (!audioCtx) return;
+      masterGain.gain.value = params.volume;
+      filter.frequency.value = params.filterFreq;
+      filter.Q.value = params.resonance;
+      shaper.curve = makeDistortionCurve(params.distortion);
+      delayWet.gain.value = params.delayMix;
+      updateReverb();
+    }
+
+    function snapshotParams() {
+      return { ...params };
+    }
+
+    function restoreParams(saved) {
+      Object.assign(params, saved);
+      renderControls();
+      updateRecipe();
+      updateAudioParams();
+    }
+
+    function resetPitchCycle() {
+      pitchDownBase = null;
+      pitchDownSteps = 0;
+    }
+
+    function applyPreset(name) {
+      currentPreset = name;
+      Object.assign(params, presets[name]);
+      resetPitchCycle();
+      renderControls();
+      updateRecipe();
+      updateAudioParams();
+    }
+
+    function renderControls() {
+      const root = document.getElementById('controls');
+      root.innerHTML = '';
+
+      const modeWrap = document.createElement('div');
+      modeWrap.className = 'control';
+      modeWrap.innerHTML = `<label>Pitch Mode <span class="value">${params.mode}</span></label>
+        <select id="modeSelect">
+          <option value="rise">rise</option>
+          <option value="fall">fall</option>
+          <option value="pulse">pulse</option>
+        </select>`;
+      root.appendChild(modeWrap);
+      const select = modeWrap.querySelector('select');
+      select.value = params.mode;
+      select.addEventListener('change', e => {
+        params.mode = e.target.value;
+        modeWrap.querySelector('.value').textContent = params.mode;
+      });
+
+      const reverbWrap = document.createElement('div');
+      reverbWrap.className = 'control';
+      reverbWrap.innerHTML = `<label>End Chain Reverb <span class="value">${params.reverb}</span></label>
+        <select id="reverbSelect">
+          <option value="off">off</option>
+          <option value="bunker">buried bunker</option>
+          <option value="scorched">scorched lands</option>
+          <option value="cavern">sunken cavern</option>
+          <option value="colony">lost colony hall</option>
+        </select>`;
+      root.appendChild(reverbWrap);
+      const reverbSelect = reverbWrap.querySelector('select');
+      reverbSelect.value = params.reverb;
+      reverbSelect.addEventListener('change', e => {
+        params.reverb = e.target.value;
+        reverbWrap.querySelector('.value').textContent = params.reverb;
+        updateReverb();
+      });
+
+      controlDefs.forEach(([key, label, min, max, step]) => {
+        const div = document.createElement('div');
+        div.className = 'control';
+        div.innerHTML = `<label>${label}<span class="value" id="v-${key}">${Number(params[key]).toFixed(step < 0.01 ? 3 : step < 1 ? 2 : 0)}</span></label>
+          <input type="range" min="${min}" max="${max}" step="${step}" value="${params[key]}" />`;
+        const input = div.querySelector('input');
+        input.addEventListener('input', e => {
+          params[key] = Number(e.target.value);
+          document.getElementById(`v-${key}`).textContent = Number(params[key]).toFixed(step < 0.01 ? 3 : step < 1 ? 2 : 0);
+          updateAudioParams();
+        });
+        root.appendChild(div);
+      });
+    }
+
+    function randomBetween(min, max) {
+      return min + Math.random() * (max - min);
+    }
+
+    function randomizeSignal() {
+      params.baseFreq = Math.round(randomBetween(35, 210));
+      params.modRatio = Number(randomBetween(0.35, 6.2).toFixed(2));
+      params.modIndex = Math.round(randomBetween(60, 980));
+      params.sweep = Math.round(randomBetween(-28, 28));
+      params.sweepTime = Number(randomBetween(0.08, 3.2).toFixed(2));
+      params.attack = Number(randomBetween(0.001, 0.28).toFixed(3));
+      params.decay = Number(randomBetween(0.12, 3.8).toFixed(2));
+      params.noise = Number(randomBetween(0.03, 0.55).toFixed(2));
+      params.distortion = Math.round(randomBetween(120, 1050));
+      params.crush = Number(randomBetween(0.12, 0.86).toFixed(2));
+      params.filterFreq = Math.round(randomBetween(180, 4200));
+      params.resonance = Number(randomBetween(2, 24).toFixed(1));
+      params.delayMix = Number(randomBetween(0, 0.34).toFixed(2));
+      params.volume = Number(randomBetween(0.35, 0.72).toFixed(2));
+      params.mode = ['rise', 'fall', 'pulse'][Math.floor(Math.random() * 3)];
+      params.reverb = ['off', 'bunker', 'scorched', 'cavern', 'colony'][Math.floor(Math.random() * 5)];
+      currentPreset = 'random';
+      resetPitchCycle();
+      renderControls();
+      updateRecipe();
+      updateAudioParams();
+      playMachine();
+    }
+
+    function pitchDownSignal() {
+      if (!pitchDownBase) {
+        pitchDownBase = snapshotParams();
+        pitchDownSteps = 0;
+      }
+
+      pitchDownSteps += 1;
+      if (pitchDownSteps > 3) {
+        restoreParams(pitchDownBase);
+        resetPitchCycle();
+        currentPreset = 'pitchReset';
+        updateRecipe();
+        playMachine();
+        return;
+      }
+
+      const divisor = Math.pow(2, pitchDownSteps);
+      params.baseFreq = Math.max(30, Number((pitchDownBase.baseFreq / divisor).toFixed(2)));
+      params.modIndex = Math.min(1200, Math.round(pitchDownBase.modIndex * (1 + pitchDownSteps * 0.08)));
+      params.filterFreq = Math.max(120, Math.round(pitchDownBase.filterFreq * Math.pow(0.68, pitchDownSteps)));
+      params.decay = Math.min(5, Number((pitchDownBase.decay * (1 + pitchDownSteps * 0.15)).toFixed(2)));
+      currentPreset = 'pitchedDown';
+      renderControls();
+      updateRecipe();
+      updateAudioParams();
+      playMachine();
+    }
+
+    function setSyncStatus(message, tone) {
+      const status = document.getElementById('syncStatus');
+      status.textContent = message;
+      status.className = `sync-status ${tone || ''}`.trim();
+    }
+
+    function isCommunitySyncEnabled() {
+      return Boolean(communityPresetCloud.supabaseUrl && communityPresetCloud.supabaseAnonKey);
+    }
+
+    function communityEndpoint(query = '') {
+      const base = communityPresetCloud.supabaseUrl.replace(/\/$/, '');
+      return `${base}/rest/v1/${communityPresetCloud.table}${query}`;
+    }
+
+    function communityHeaders() {
+      return {
+        apikey: communityPresetCloud.supabaseAnonKey,
+        Authorization: `Bearer ${communityPresetCloud.supabaseAnonKey}`,
+        'Content-Type': 'application/json'
+      };
+    }
+
+    function getLocalPresetBackups() {
+      return JSON.parse(localStorage.getItem(localPresetBackupKey) || '{}');
+    }
+
+    function setLocalPresetBackup(name, presetParams) {
+      const saved = getLocalPresetBackups();
+      saved[name] = presetParams;
+      localStorage.setItem(localPresetBackupKey, JSON.stringify(saved));
+    }
+
+    async function getCommunityPresets() {
+      if (!isCommunitySyncEnabled()) {
+        return Object.entries(getLocalPresetBackups()).map(([name, presetParams]) => ({
+          id: name,
+          name,
+          params: presetParams,
+          localOnly: true
+        }));
+      }
+
+      const response = await fetch(communityEndpoint('?select=id,name,params,created_at&order=created_at.desc&limit=100'), {
+        headers: communityHeaders()
+      });
+      if (!response.ok) throw new Error(`Preset cloud read failed: ${response.status}`);
+      return response.json();
+    }
+
+    async function renderSavedPresetList() {
+      const select = document.getElementById('savedPresetSelect');
+      select.innerHTML = '<option value="">loading community...</option>';
+
+      try {
+        const presetsFromCloud = await getCommunityPresets();
+        select.innerHTML = presetsFromCloud.length
+          ? '<option value="">load community...</option>'
+          : '<option value="">no community presets</option>';
+        presetsFromCloud.forEach(preset => {
+          const option = document.createElement('option');
+          option.value = JSON.stringify(preset.params);
+          option.textContent = preset.localOnly ? `${preset.name} (local)` : preset.name;
+          option.dataset.name = preset.name;
+          select.appendChild(option);
+        });
+        setSyncStatus(
+          isCommunitySyncEnabled()
+            ? `Community presets online: ${presetsFromCloud.length}`
+            : 'Global preset cloud is not configured yet. Saves are local until Supabase is added.',
+          isCommunitySyncEnabled() ? 'good' : 'bad'
+        );
+      } catch (error) {
+        select.innerHTML = '<option value="">cloud unavailable</option>';
+        setSyncStatus(error.message, 'bad');
+      }
+    }
+
+    async function saveCurrentPreset() {
+      const input = document.getElementById('presetName');
+      const name = input.value.trim() || `signal-${new Date().toISOString().slice(0, 10)}`;
+      const presetParams = snapshotParams();
+      input.value = name;
+      setLocalPresetBackup(name, presetParams);
+
+      if (!isCommunitySyncEnabled()) {
+        setSyncStatus('Global preset cloud is not configured yet. Saved locally for now.', 'bad');
+        await renderSavedPresetList();
+        return;
+      }
+
+      setSyncStatus('Saving to community...', '');
+      const response = await fetch(communityEndpoint(), {
+        method: 'POST',
+        headers: { ...communityHeaders(), Prefer: 'return=representation' },
+        body: JSON.stringify({ name, params: presetParams })
+      });
+      if (!response.ok) {
+        setSyncStatus(`Community save failed: ${response.status}`, 'bad');
+        return;
+      }
+      setSyncStatus('Saved to community presets.', 'good');
+      await renderSavedPresetList();
+    }
+
+    function loadSavedPreset(encodedPreset) {
+      if (!encodedPreset) return;
+      const select = document.getElementById('savedPresetSelect');
+      const name = select.selectedOptions[0]?.dataset.name || 'community preset';
+      currentPreset = 'saved';
+      resetPitchCycle();
+      restoreParams(JSON.parse(encodedPreset));
+      document.getElementById('presetName').value = name;
+      select.value = encodedPreset;
+      setSyncStatus(`Loaded ${name}.`, 'good');
+      playMachine();
+    }
+
+    function renderNotes() {
+      const grid = document.getElementById('noteGrid');
+      grid.innerHTML = '';
+      notes.forEach(([name, freq]) => {
+        const btn = document.createElement('button');
+        btn.className = 'note';
+        btn.textContent = name;
+        btn.addEventListener('click', () => playMachine(freq));
+        grid.appendChild(btn);
+      });
+    }
+
+    function updateRecipe() {
+      const customRecipes = {
+        random: 'Randomized Signal\nNew settings. Unknown machine.',
+        pitchedDown: 'Pitch Down ×2\nLower pass. Press again to keep falling.',
+        pitchReset: 'Pitch Reset\nBack where it started.',
+        saved: 'Saved Preset\nLoaded from this browser.'
+      };
+      document.getElementById('recipe').textContent = customRecipes[currentPreset] || presets[currentPreset].recipe;
+    }
+
+    function drawScope() {
+      const canvas = document.getElementById('scope');
+      const ctx = canvas.getContext('2d');
+      const buffer = new Uint8Array(analyser.frequencyBinCount);
+
+      function draw() {
+        requestAnimationFrame(draw);
+        analyser.getByteTimeDomainData(buffer);
+        ctx.fillStyle = '#080808';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#b43a35';
+        ctx.beginPath();
+
+        const slice = canvas.width / buffer.length;
+        let x = 0;
+        for (let i = 0; i < buffer.length; i++) {
+          const v = buffer[i] / 128.0;
+          const y = v * canvas.height / 2;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+          x += slice;
+        }
+        ctx.lineTo(canvas.width, canvas.height / 2);
+        ctx.stroke();
+
+        ctx.strokeStyle = 'rgba(154,134,112,0.25)';
+        ctx.beginPath();
+        ctx.moveTo(0, canvas.height / 2);
+        ctx.lineTo(canvas.width, canvas.height / 2);
+        ctx.stroke();
+      }
+      draw();
+    }
+
+    document.getElementById('playMain').addEventListener('click', () => playMachine());
+    document.getElementById('randomizeSignal').addEventListener('click', randomizeSignal);
+    document.getElementById('pitchDown').addEventListener('click', pitchDownSignal);
+    document.getElementById('savePreset').addEventListener('click', saveCurrentPreset);
+    document.getElementById('refreshPresets').addEventListener('click', renderSavedPresetList);
+    document.getElementById('savedPresetSelect').addEventListener('change', e => loadSavedPreset(e.target.value));
+    document.querySelectorAll('[data-preset]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        applyPreset(btn.dataset.preset);
+        playMachine();
+      });
+    });
+
+    renderControls();
+    renderSavedPresetList();
+    renderNotes();
+    updateRecipe();
+  </script>
+</body>
+</html>
