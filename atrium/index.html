@@ -2,17 +2,79 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>The Atrium</title>
     <link rel="preload" href="/atrium/audio/Atrium_stereo_1mb.mp3" as="audio" type="audio/mpeg" />
     <style>
       html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #000; }
       #app { display: none; }
       canvas { display: block; width: 100vw !important; height: 100vh !important; }
+      @supports (width: 100dvw) {
+        canvas { width: 100dvw !important; height: 100dvh !important; }
+      }
+      #landscape-guard {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 10000;
+        box-sizing: border-box;
+        align-items: center;
+        justify-content: center;
+        padding:
+          max(24px, env(safe-area-inset-top))
+          max(24px, env(safe-area-inset-right))
+          max(24px, env(safe-area-inset-bottom))
+          max(24px, env(safe-area-inset-left));
+        background: #08090d;
+        color: #f7f3ea;
+        font-family: Arial, sans-serif;
+        text-align: center;
+      }
+      #landscape-guard button {
+        min-width: 220px;
+        min-height: 56px;
+        padding: 14px 22px;
+        border: 2px solid #f7f3ea;
+        border-radius: 4px;
+        background: #b52c36;
+        color: #fff;
+        font: 700 18px/1.2 Arial, sans-serif;
+        cursor: pointer;
+      }
+      #landscape-guard .rotate-icon {
+        display: block;
+        margin: 0 auto 18px;
+        font-size: 52px;
+        line-height: 1;
+        transform: rotate(90deg);
+      }
+      #landscape-guard p {
+        margin: 0 0 20px;
+        font-size: 20px;
+        line-height: 1.35;
+      }
+      @media (orientation: portrait) {
+        html.mobile-device #landscape-guard { display: flex; }
+      }
+      @media (orientation: portrait) and (max-width: 600px) {
+        #landscape-guard { display: flex; }
+      }
     </style>
-    <script type="module" crossorigin src="/atrium/assets/index-Coqw3b2N.js"></script>
+    <script>
+      if (matchMedia("(pointer: coarse)").matches || navigator.maxTouchPoints > 0) {
+        document.documentElement.classList.add("mobile-device");
+      }
+    </script>
+    <script type="module" crossorigin src="/atrium/assets/index-ByvN2zKz.js"></script>
   </head>
   <body>
     <div id="app"></div>
+    <div id="landscape-guard" role="dialog" aria-modal="true" aria-label="Landscape orientation required">
+      <div>
+        <span class="rotate-icon" aria-hidden="true">&#8635;</span>
+        <p>Rotate your phone to landscape.</p>
+        <button id="landscape-lock-button" type="button">Play in landscape</button>
+      </div>
+    </div>
   </body>
 </html>
