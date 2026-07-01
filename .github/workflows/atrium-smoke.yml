@@ -1,0 +1,75 @@
+name: Atrium smoke tests
+
+on:
+  pull_request:
+    paths:
+      - "atrium/**"
+      - "tests/**"
+      - "package.json"
+      - "package-lock.json"
+      - "playwright.config.js"
+      - ".github/workflows/atrium-smoke.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "atrium/**"
+      - "tests/**"
+      - "package.json"
+      - "package-lock.json"
+      - "playwright.config.js"
+      - ".github/workflows/atrium-smoke.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  local-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm test
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: atrium-playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+  live-smoke:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: local-smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Wait for GitHub Pages
+        shell: bash
+        run: |
+          for attempt in {1..20}; do
+            if curl --fail --silent --location https://radwall.com/atrium/ \
+              | grep --quiet '<title>The Atrium</title>'; then
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "Atrium did not become available within five minutes."
+          exit 1
+      - name: Test live deployment
+        run: npm test
+        env:
+          PLAYWRIGHT_BASE_URL: https://radwall.com
