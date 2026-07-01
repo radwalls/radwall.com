@@ -63,7 +63,7 @@ jobs:
         shell: bash
         run: |
           for attempt in {1..20}; do
-            if curl --fail --silent --location https://radwall.com/atrium/ \
+            if curl --fail --silent --location https://www.radwall.com/atrium/ \
               | grep --quiet '<title>The Atrium</title>'; then
               exit 0
             fi
@@ -74,4 +74,4 @@ jobs:
       - name: Test live deployment
         run: npm test
         env:
-          PLAYWRIGHT_BASE_URL: https://radwall.com
+          PLAYWRIGHT_BASE_URL: https://www.radwall.com

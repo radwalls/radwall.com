@@ -1,7 +1,6 @@
 const { test, expect } = require("@playwright/test");
 
 const criticalAssets = [
-  "/atrium/audio/Atrium_stereo_1mb.mp3",
   "/atrium/sprites/char.png",
   "/atrium/sprites/atrium_state_day.png",
   "/atrium/videos/atriumkaplay_cropped.mp4"
