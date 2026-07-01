@@ -5,6 +5,8 @@ on:
     paths:
       - "atrium/**"
       - "CNAME"
+      - "grey-red-synth.html"
+      - "supabase-synth-presets.sql"
       - "tests/**"
       - "package.json"
       - "package-lock.json"
@@ -16,6 +18,8 @@ on:
     paths:
       - "atrium/**"
       - "CNAME"
+      - "grey-red-synth.html"
+      - "supabase-synth-presets.sql"
       - "tests/**"
       - "package.json"
       - "package-lock.json"
