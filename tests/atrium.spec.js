@@ -33,7 +33,9 @@ test.describe("Atrium deployment", () => {
     const bundlePath = await page
       .locator('script[type="module"]')
       .getAttribute("src");
-    expect(bundlePath).toMatch(/^\/atrium\/assets\/index-[\w-]+\.js$/);
+    expect(bundlePath).toMatch(
+      /^\/atrium\/assets\/index-[\w-]+\.js(?:\?v=[\w-]+)?$/
+    );
 
     const preloadPath = await page
       .locator('link[rel="preload"][as="audio"]')
@@ -64,6 +66,30 @@ test.describe("Atrium deployment", () => {
     const response = await page.goto("/", { waitUntil: "domcontentloaded" });
     expect(response?.ok()).toBeTruthy();
     await expect(page.locator('a[href*="atrium"]')).toHaveCount(0);
+  });
+
+  test("playtest fixes are present in the deployed game bundle", async ({
+    request
+  }) => {
+    const entry = await request.get("/atrium/");
+    const html = await entry.text();
+    const bundlePath = html.match(
+      /src="(\/atrium\/assets\/index-[\w-]+\.js(?:\?v=[\w-]+)?)"/
+    )?.[1];
+    expect(bundlePath).toBeTruthy();
+
+    const bundle = await (await request.get(bundlePath)).text();
+
+    expect(bundle).toContain("secondAtriumFallPending");
+    expect(bundle).toContain("MANUS DRAWS NIGHT OVER THE ATRIUM");
+    expect(bundle).toContain("RETURN HOME AND SLEEP");
+    expect(bundle).toContain("LAUNCHED");
+    expect(bundle).toContain("BOUND");
+    expect(bundle).toContain("The Bubble Board is yours. Have fun out there.");
+    expect(bundle).toContain("This procession looks like a celebration.");
+
+    expect(bundle).not.toContain('p.onCollide("fanHaz"');
+    expect(bundle).not.toContain("The spherical refractions fade with each dawn.");
   });
 });
 
