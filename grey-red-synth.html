@@ -530,17 +530,11 @@
       box-shadow: inset 0 1px 0 #ff7d6d, 0 3px 0 #180706, 0 0 18px rgba(165,38,32,.2);
     }
 
-    .utility-row,
-    .backup-row {
+    .utility-row {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 8px;
       margin-bottom: 10px;
-    }
-
-    .backup-row {
-      grid-template-columns: 1fr;
-      margin: 0 0 14px;
     }
 
     .utility-button {
@@ -553,6 +547,27 @@
       border-color: #285745;
       background: #09130f;
       font-family: "Courier New", monospace;
+    }
+
+    .backup-footer {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 8px;
+      padding: 4px 2px 0;
+    }
+
+    .backup-footer .backup-button {
+      min-height: 0;
+      padding: 3px 6px;
+      border-width: 1px;
+      opacity: .58;
+      font-size: 7px;
+      letter-spacing: .03em;
+      text-transform: lowercase;
+    }
+
+    .backup-footer .backup-button:hover {
+      opacity: 1;
     }
 
     .preset-save-row {
@@ -604,6 +619,18 @@
       background: #0a0b0c;
     }
 
+    .featured-preset-empty {
+      grid-column: 1 / -1;
+      padding: 10px;
+      color: #7b877f;
+      font: 10px/1.4 "Courier New", monospace;
+      text-align: center;
+    }
+
+    .control {
+      cursor: help;
+    }
+
     .preset {
       min-height: 68px;
       text-align: left;
@@ -652,6 +679,28 @@
       text-transform: uppercase;
     }
 
+    .reverb-level-row {
+      display: grid;
+      grid-template-columns: auto minmax(50px, 1fr) auto;
+      align-items: center;
+      gap: 7px;
+      margin: -3px 0 9px;
+      color: #8f958f;
+      font: 8px/1 "Courier New", monospace;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    .reverb-level-row input {
+      min-width: 0;
+      margin: 0;
+    }
+
+    .reverb-level-row .value {
+      min-width: 30px;
+      text-align: right;
+    }
+
     .value {
       color: var(--machine-amber);
       text-shadow: 0 0 5px rgba(255,180,60,.45);
@@ -696,7 +745,7 @@
     }
 
     .recipe::before {
-      content: "GREIEARTH SIGNAL RECIPE // REVIEW-ADD-CHANGE\A\A";
+      content: "SIGNAL RECIPE / CONTROL NOTES\A\A";
       white-space: pre-wrap;
       overflow-wrap: anywhere;
       color: #b4ffe0;
@@ -816,6 +865,7 @@
         </div>
         <div class="utility-row">
           <button class="utility-button" id="randomizeSignal">Randomize Signal</button>
+          <button class="utility-button" id="exportWav">Export Current Sound (.wav)</button>
           <button class="utility-button" id="pitchDown">Pitch Down ×2</button>
         </div>
         <div class="preset-save-row">
@@ -824,18 +874,10 @@
           <select id="savedPresetSelect" aria-label="Saved presets"></select>
           <button class="utility-button" id="refreshPresets">Refresh</button>
         </div>
-        <div class="backup-row">
-          <button class="backup-button" id="exportPresets">Download Preset Backup</button>
-        </div>
         <div class="preset-status" id="presetStatus">online presets loading...</div>
 
-        <div class="preset-row">
-          <button class="preset" data-preset="beacon"><strong>Distant Beacon</strong><span>slow signal</span></button>
-          <button class="preset" data-preset="sword"><strong>Ancient Sword Swing</strong><span>bright steel sweep</span></button>
-          <button class="preset" data-preset="reactor"><strong>Reactor Cough</strong><span>low engine hit</span></button>
-          <button class="preset" data-preset="lock"><strong>Lock-On Ghost</strong><span>broken target beep</span></button>
-          <button class="preset" data-preset="gundam"><strong>Old Anime Power-Up</strong><span>rising charge</span></button>
-          <button class="preset" data-preset="servo"><strong>Servo Twitch</strong><span>short metal jab</span></button>
+        <div class="preset-row" id="featuredPresetRow" aria-label="Featured shared presets">
+          <div class="featured-preset-empty">loading user-made signals...</div>
         </div>
 
         <h2 class="section-title">Sound Controls</h2>
@@ -851,10 +893,10 @@
 
         <h2 class="section-title">Current Recipe</h2>
         <div class="recipe" id="recipe"></div>
-        <div class="small">
-          Tip: record a few passes, keep the strange parts, reverse one, then bury it under the next section.
-        </div>
       </aside>
+    </div>
+    <div class="backup-footer">
+      <button class="backup-button" id="exportPresets">download preset backup</button>
     </div>
   </main>
 
@@ -871,10 +913,12 @@
     let reverbDry;
     let filter;
     let bitCrusher;
-    let currentPreset = 'beacon';
+    let currentPreset = 'random';
     let pitchDownBase = null;
     let pitchDownSteps = 0;
     let sharedPresets = {};
+    let featuredPresetNames = [];
+    let loadedSharedPresetName = '';
     let midiAccess = null;
     const savedPresetKey = 'greyRedMachinePresets';
     const savedPresetBackupKey = 'greyRedMachinePresetsBackup';
@@ -886,6 +930,14 @@
     };
     const supabaseEnabled = !supabaseConfig.url.includes('YOUR-PROJECT-REF') && !supabaseConfig.anonKey.includes('YOUR-SUPABASE');
     const sharedRefreshMs = 30000;
+    const housePresetNames = new Set([
+      'distant beacon',
+      'ancient sword swing',
+      'reactor cough',
+      'lock-on ghost',
+      'old anime power-up',
+      'servo twitch'
+    ]);
 
     const params = {
       baseFreq: 82,
@@ -903,7 +955,8 @@
       delayMix: 0.12,
       volume: 0.55,
       mode: 'rise',
-      reverb: 'bunker'
+      reverb: 'bunker',
+      reverbLevel: 1
     };
 
     const presets = {
@@ -955,6 +1008,26 @@
       ['delayMix', 'Delay Ghost', 0, 0.5, 0.01],
       ['volume', 'Volume', 0, 1, 0.01]
     ];
+
+    const controlDescriptions = {
+      mode: ['Pitch Mode', 'Changes the pitch pattern used when the sound plays.'],
+      reverb: ['End Chain Reverb', 'Adds room sound after the other effects.'],
+      reverbLevel: ['Reverb Level', 'Sets how much of the selected room sound is mixed in, from dry to five times the normal level.'],
+      baseFreq: ['Base Frequency', 'Sets the main pitch. Low values sound deeper; high values sound sharper.'],
+      modRatio: ['FM Ratio', 'Changes the relationship between the main oscillator and the FM oscillator.'],
+      modIndex: ['FM Violence', 'Sets how strongly FM changes the sound. Higher values make it harsher and more metallic.'],
+      sweep: ['Pitch Sweep Semitones', 'Sets how far the pitch moves up or down.'],
+      sweepTime: ['Sweep Time', 'Sets how long the pitch movement takes.'],
+      attack: ['Attack', 'Sets how quickly the sound reaches full volume.'],
+      decay: ['Decay', 'Sets how long the sound takes to fade out.'],
+      noise: ['Noise Layer', 'Adds noise underneath the main tone.'],
+      distortion: ['Distortion', 'Adds roughness and clipping.'],
+      crush: ['Digital Crush', 'Reduces digital detail for a more broken sound.'],
+      filterFreq: ['Filter Frequency', 'Chooses the main frequency area allowed through the filter.'],
+      resonance: ['Filter Resonance', 'Boosts frequencies around the filter setting.'],
+      delayMix: ['Delay Ghost', 'Controls how much echo is mixed in.'],
+      volume: ['Volume', 'Sets the final output level.']
+    };
 
     const notes = [
       ['E2', 82.41], ['G2', 98.00], ['A2', 110.00], ['B2', 123.47], ['D3', 146.83], ['E3', 164.81], ['G3', 196.00]
@@ -1045,16 +1118,20 @@
       return curve;
     }
 
-    function noiseBuffer(duration) {
-      const buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * duration, audioCtx.sampleRate);
+    function noiseBufferFor(context, duration) {
+      const buffer = context.createBuffer(1, context.sampleRate * duration, context.sampleRate);
       const data = buffer.getChannelData(0);
       for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
       return buffer;
     }
 
-    function makeImpulse(duration, decay) {
-      const length = Math.max(1, Math.floor(audioCtx.sampleRate * duration));
-      const impulse = audioCtx.createBuffer(2, length, audioCtx.sampleRate);
+    function noiseBuffer(duration) {
+      return noiseBufferFor(audioCtx, duration);
+    }
+
+    function makeImpulseFor(context, duration, decay) {
+      const length = Math.max(1, Math.floor(context.sampleRate * duration));
+      const impulse = context.createBuffer(2, length, context.sampleRate);
       for (let channel = 0; channel < impulse.numberOfChannels; channel++) {
         const data = impulse.getChannelData(channel);
         for (let i = 0; i < length; i++) {
@@ -1065,8 +1142,11 @@
       return impulse;
     }
 
-    function updateReverb() {
-      if (!audioCtx || !reverbWet || !reverbDry) return;
+    function makeImpulse(duration, decay) {
+      return makeImpulseFor(audioCtx, duration, decay);
+    }
+
+    function getReverbSettings(reverbName = params.reverb) {
       const spaces = {
         off: { duration: 0.08, decay: 1, wet: 0, dry: 1 },
         bunker: { duration: 1.2, decay: 2.4, wet: 0.18, dry: 0.86 },
@@ -1074,10 +1154,48 @@
         cavern: { duration: 3.4, decay: 2.8, wet: 0.32, dry: 0.72 },
         colony: { duration: 1.75, decay: 1.45, wet: 0.22, dry: 0.82 }
       };
-      const space = spaces[params.reverb] || spaces.bunker;
+      return spaces[reverbName] || spaces.bunker;
+    }
+
+    function updateReverb() {
+      if (!audioCtx || !reverbWet || !reverbDry) return;
+      const space = getReverbSettings();
       reverb.buffer = makeImpulse(space.duration, space.decay);
-      reverbWet.gain.value = space.wet;
+      reverbWet.gain.value = space.wet * params.reverbLevel;
       reverbDry.gain.value = space.dry;
+    }
+
+    function getPitchEvents(frequency, mode = params.mode) {
+      switch (mode) {
+        case 'pulse':
+          return [
+            { frequency, offset: 0 },
+            { frequency: frequency * 1.12, offset: 0.23 },
+            { frequency: frequency * 0.84, offset: 0.46 }
+          ];
+        case 'staircase':
+          return [
+            { frequency, offset: 0 },
+            { frequency: frequency * 1.19, offset: 0.15 },
+            { frequency: frequency * 1.5, offset: 0.3 },
+            { frequency: frequency * 2, offset: 0.45 }
+          ];
+        case 'fracture':
+          return [
+            { frequency, offset: 0 },
+            { frequency: frequency * 2.01, offset: 0.045 },
+            { frequency: frequency * 0.5, offset: 0.11 }
+          ];
+        case 'orbit':
+          return [
+            { frequency, offset: 0 },
+            { frequency: frequency * 0.75, offset: 0.18 },
+            { frequency: frequency * 1.5, offset: 0.36 },
+            { frequency, offset: 0.54 }
+          ];
+        default:
+          return [{ frequency, offset: 0 }];
+      }
     }
 
     function playMachine(freqOverride) {
@@ -1086,13 +1204,10 @@
 
       updateAudioParams();
 
-      if (params.mode === 'pulse') {
-        playTone(freqOverride || params.baseFreq);
-        setTimeout(() => playTone((freqOverride || params.baseFreq) * 1.12), 230);
-        setTimeout(() => playTone((freqOverride || params.baseFreq) * 0.84), 460);
-      } else {
-        playTone(freqOverride || params.baseFreq);
-      }
+      getPitchEvents(freqOverride || params.baseFreq).forEach(event => {
+        if (event.offset === 0) playTone(event.frequency);
+        else setTimeout(() => playTone(event.frequency), event.offset * 1000);
+      });
     }
 
     function isTypingTarget(target) {
@@ -1188,6 +1303,272 @@
       noise.stop(now + duration);
     }
 
+    function applyBitCrusher(context, source, crush) {
+      const step = Math.pow(0.5, 4 + Math.floor((1 - crush) * 10));
+      const holdRate = 1 + Math.floor(crush * 38);
+      const crushed = context.createBuffer(
+        source.numberOfChannels,
+        source.length,
+        source.sampleRate
+      );
+
+      for (let channel = 0; channel < source.numberOfChannels; channel++) {
+        const input = source.getChannelData(channel);
+        const output = crushed.getChannelData(channel);
+        let phase = 0;
+        let last = 0;
+        for (let index = 0; index < input.length; index++) {
+          phase++;
+          if (phase >= holdRate) {
+            phase = 0;
+            last = step * Math.floor(input[index] / step + 0.5);
+          }
+          output[index] = last;
+        }
+      }
+      return crushed;
+    }
+
+    function scheduleRenderedTone(
+      context,
+      destination,
+      baseFreq,
+      offset,
+      settings = params
+    ) {
+      const duration = Math.max(
+        settings.decay + settings.attack + 0.2,
+        settings.sweepTime + 0.2
+      );
+      const carrier = context.createOscillator();
+      const mod = context.createOscillator();
+      const modGain = context.createGain();
+      const amp = context.createGain();
+      const noise = context.createBufferSource();
+      const noiseGain = context.createGain();
+      const endFreq = baseFreq * Math.pow(2, settings.sweep / 12);
+
+      carrier.type = 'sine';
+      mod.type = 'sine';
+      carrier.frequency.setValueAtTime(baseFreq, offset);
+      carrier.frequency.exponentialRampToValueAtTime(
+        Math.max(20, endFreq),
+        offset + settings.sweepTime
+      );
+      mod.frequency.setValueAtTime(baseFreq * settings.modRatio, offset);
+      mod.frequency.exponentialRampToValueAtTime(
+        Math.max(20, endFreq * settings.modRatio),
+        offset + settings.sweepTime
+      );
+      modGain.gain.setValueAtTime(settings.modIndex, offset);
+      modGain.gain.exponentialRampToValueAtTime(
+        Math.max(1, settings.modIndex * 0.18),
+        offset + duration
+      );
+      amp.gain.setValueAtTime(0.0001, offset);
+      amp.gain.exponentialRampToValueAtTime(1, offset + settings.attack);
+      amp.gain.exponentialRampToValueAtTime(
+        0.0001,
+        offset + settings.attack + settings.decay
+      );
+      noise.buffer = noiseBufferFor(context, duration);
+      noiseGain.gain.setValueAtTime(settings.noise, offset);
+      noiseGain.gain.exponentialRampToValueAtTime(
+        0.0001,
+        offset + settings.attack + settings.decay
+      );
+
+      mod.connect(modGain);
+      modGain.connect(carrier.frequency);
+      carrier.connect(amp);
+      noise.connect(noiseGain);
+      amp.connect(destination);
+      noiseGain.connect(destination);
+      carrier.start(offset);
+      mod.start(offset);
+      noise.start(offset);
+      carrier.stop(offset + duration);
+      mod.stop(offset + duration);
+      noise.stop(offset + duration);
+    }
+
+    function encodeWav(buffer) {
+      const channels = buffer.numberOfChannels;
+      const frameCount = buffer.length;
+      const bytesPerSample = 2;
+      const output = new ArrayBuffer(44 + frameCount * channels * bytesPerSample);
+      const view = new DataView(output);
+      const channelData = Array.from(
+        { length: channels },
+        (_, channel) => buffer.getChannelData(channel)
+      );
+
+      const writeText = (offset, text) => {
+        for (let index = 0; index < text.length; index++) {
+          view.setUint8(offset + index, text.charCodeAt(index));
+        }
+      };
+
+      writeText(0, 'RIFF');
+      view.setUint32(4, output.byteLength - 8, true);
+      writeText(8, 'WAVE');
+      writeText(12, 'fmt ');
+      view.setUint32(16, 16, true);
+      view.setUint16(20, 1, true);
+      view.setUint16(22, channels, true);
+      view.setUint32(24, buffer.sampleRate, true);
+      view.setUint32(28, buffer.sampleRate * channels * bytesPerSample, true);
+      view.setUint16(32, channels * bytesPerSample, true);
+      view.setUint16(34, 16, true);
+      writeText(36, 'data');
+      view.setUint32(40, frameCount * channels * bytesPerSample, true);
+
+      let offset = 44;
+      for (let frame = 0; frame < frameCount; frame++) {
+        for (let channel = 0; channel < channels; channel++) {
+          const sample = Math.max(-1, Math.min(1, channelData[channel][frame]));
+          view.setInt16(
+            offset,
+            sample < 0 ? sample * 0x8000 : sample * 0x7fff,
+            true
+          );
+          offset += bytesPerSample;
+        }
+      }
+      return new Blob([output], { type: 'audio/wav' });
+    }
+
+    async function exportCurrentSoundWav() {
+      const button = document.getElementById('exportWav');
+      const OfflineContext =
+        window.OfflineAudioContext || window.webkitOfflineAudioContext;
+      if (!OfflineContext) {
+        setPresetStatus('wav export is not supported by this browser');
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = 'Rendering WAV...';
+      setPresetStatus('rendering current sound...');
+
+      try {
+        initAudio();
+        const exportParams = snapshotParams();
+        const sampleRate = audioCtx.sampleRate;
+        const events = getPitchEvents(
+          exportParams.baseFreq,
+          exportParams.mode
+        );
+        const toneDuration = Math.max(
+          exportParams.decay + exportParams.attack + 0.2,
+          exportParams.sweepTime + 0.2
+        );
+        const reverbSettings = getReverbSettings(exportParams.reverb);
+        const lastOffset = Math.max(...events.map(event => event.offset));
+        const sourceDuration = lastOffset + toneDuration + 0.05;
+        const renderDuration = sourceDuration + reverbSettings.duration + 1.2;
+        const sourceContext = new OfflineContext(
+          1,
+          Math.ceil(sampleRate * sourceDuration),
+          sampleRate
+        );
+
+        const exportFilter = sourceContext.createBiquadFilter();
+        exportFilter.type = 'bandpass';
+        exportFilter.frequency.value = exportParams.filterFreq;
+        exportFilter.Q.value = exportParams.resonance;
+
+        const exportShaper = sourceContext.createWaveShaper();
+        exportShaper.curve = makeDistortionCurve(exportParams.distortion);
+        exportShaper.oversample = '2x';
+        exportFilter.connect(exportShaper);
+        exportShaper.connect(sourceContext.destination);
+
+        events.forEach(event =>
+          scheduleRenderedTone(
+            sourceContext,
+            exportFilter,
+            event.frequency,
+            event.offset,
+            exportParams
+          )
+        );
+
+        const preCrush = await sourceContext.startRendering();
+        const context = new OfflineContext(
+          2,
+          Math.ceil(sampleRate * renderDuration),
+          sampleRate
+        );
+        const crushedSource = context.createBufferSource();
+        crushedSource.buffer = applyBitCrusher(
+          context,
+          preCrush,
+          exportParams.crush
+        );
+
+        const exportMaster = context.createGain();
+        exportMaster.gain.value = exportParams.volume;
+        const exportDelay = context.createDelay(1);
+        exportDelay.delayTime.value = 0.18;
+        const exportFeedback = context.createGain();
+        exportFeedback.gain.value = 0.28;
+        const exportDelayWet = context.createGain();
+        exportDelayWet.gain.value = exportParams.delayMix;
+        const exportReverb = context.createConvolver();
+        exportReverb.buffer = makeImpulseFor(
+          context,
+          reverbSettings.duration,
+          reverbSettings.decay
+        );
+        const exportReverbWet = context.createGain();
+        exportReverbWet.gain.value =
+          reverbSettings.wet * exportParams.reverbLevel;
+        const exportDry = context.createGain();
+        exportDry.gain.value = reverbSettings.dry;
+
+        crushedSource.connect(exportMaster);
+        crushedSource.connect(exportDelay);
+        exportDelay.connect(exportFeedback);
+        exportFeedback.connect(exportDelay);
+        exportDelay.connect(exportDelayWet);
+        exportDelayWet.connect(exportMaster);
+        exportMaster.connect(exportDry);
+        exportMaster.connect(exportReverb);
+        exportDry.connect(context.destination);
+        exportReverb.connect(exportReverbWet);
+        exportReverbWet.connect(context.destination);
+
+        crushedSource.start(0);
+        const rendered = await context.startRendering();
+        const blob = encodeWav(rendered);
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        const requestedName =
+          loadedSharedPresetName ||
+          cleanPresetName(document.getElementById('presetName').value) ||
+          currentPreset ||
+          'grey-red-signal';
+        const fileName = requestedName
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-|-$/g, '') || 'grey-red-signal';
+        link.href = url;
+        link.download = `${fileName}.wav`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+        setPresetStatus(`wav ready (${(blob.size / 1048576).toFixed(1)} MB)`);
+      } catch (error) {
+        console.error('WAV export failed', error);
+        setPresetStatus('wav export failed');
+      } finally {
+        button.disabled = false;
+        button.textContent = 'Export Current Sound (.wav)';
+      }
+    }
+
     function updateAudioParams() {
       if (!audioCtx) return;
       masterGain.gain.value = params.volume;
@@ -1216,6 +1597,7 @@
 
     function applyPreset(name) {
       currentPreset = name;
+      loadedSharedPresetName = '';
       Object.assign(params, presets[name]);
       resetPitchCycle();
       renderControls();
@@ -1234,18 +1616,29 @@
           <option value="rise">rise</option>
           <option value="fall">fall</option>
           <option value="pulse">pulse</option>
+          <option value="staircase">staircase</option>
+          <option value="fracture">fracture</option>
+          <option value="orbit">orbit</option>
         </select>`;
       root.appendChild(modeWrap);
       const select = modeWrap.querySelector('select');
       select.value = params.mode;
+      modeWrap.addEventListener('pointerdown', () => showControlExplanation('mode'));
+      select.addEventListener('focus', () => showControlExplanation('mode'));
       select.addEventListener('change', e => {
         params.mode = e.target.value;
         modeWrap.querySelector('.value').textContent = params.mode;
+        showControlExplanation('mode');
       });
 
       const reverbWrap = document.createElement('div');
       reverbWrap.className = 'control';
       reverbWrap.innerHTML = `<label>End Chain Reverb <span class="value">${params.reverb}</span></label>
+        <div class="reverb-level-row">
+          <span>level</span>
+          <input id="reverbLevel" type="range" min="0" max="5" step="0.01" value="${params.reverbLevel}" />
+          <span class="value" id="v-reverbLevel">${Math.round(params.reverbLevel * 100)}%</span>
+        </div>
         <select id="reverbSelect">
           <option value="off">off</option>
           <option value="bunker">buried bunker</option>
@@ -1255,10 +1648,26 @@
         </select>`;
       root.appendChild(reverbWrap);
       const reverbSelect = reverbWrap.querySelector('select');
+      const reverbLevel = reverbWrap.querySelector('#reverbLevel');
       reverbSelect.value = params.reverb;
+      reverbWrap.addEventListener('pointerdown', () => showControlExplanation('reverb'));
+      reverbLevel.addEventListener('pointerdown', event => {
+        event.stopPropagation();
+        showControlExplanation('reverbLevel');
+      });
+      reverbLevel.addEventListener('focus', () => showControlExplanation('reverbLevel'));
+      reverbLevel.addEventListener('input', event => {
+        params.reverbLevel = Number(event.target.value);
+        reverbWrap.querySelector('#v-reverbLevel').textContent =
+          `${Math.round(params.reverbLevel * 100)}%`;
+        showControlExplanation('reverbLevel');
+        updateReverb();
+      });
+      reverbSelect.addEventListener('focus', () => showControlExplanation('reverb'));
       reverbSelect.addEventListener('change', e => {
         params.reverb = e.target.value;
         reverbWrap.querySelector('.value').textContent = params.reverb;
+        showControlExplanation('reverb');
         updateReverb();
       });
 
@@ -1268,9 +1677,12 @@
         div.innerHTML = `<label>${label}<span class="value" id="v-${key}">${Number(params[key]).toFixed(step < 0.01 ? 3 : step < 1 ? 2 : 0)}</span></label>
           <input type="range" min="${min}" max="${max}" step="${step}" value="${params[key]}" />`;
         const input = div.querySelector('input');
+        div.addEventListener('pointerdown', () => showControlExplanation(key));
+        input.addEventListener('focus', () => showControlExplanation(key));
         input.addEventListener('input', e => {
           params[key] = Number(e.target.value);
           document.getElementById(`v-${key}`).textContent = Number(params[key]).toFixed(step < 0.01 ? 3 : step < 1 ? 2 : 0);
+          showControlExplanation(key);
           updateAudioParams();
         });
         root.appendChild(div);
@@ -1296,7 +1708,8 @@
       params.resonance = Number(randomBetween(2, 24).toFixed(1));
       params.delayMix = Number(randomBetween(0, 0.34).toFixed(2));
       params.volume = Number(randomBetween(0.35, 0.72).toFixed(2));
-      params.mode = ['rise', 'fall', 'pulse'][Math.floor(Math.random() * 3)];
+      const pitchModes = ['rise', 'fall', 'pulse', 'staircase', 'fracture', 'orbit'];
+      params.mode = pitchModes[Math.floor(Math.random() * pitchModes.length)];
       params.reverb = ['off', 'bunker', 'scorched', 'cavern', 'colony'][Math.floor(Math.random() * 5)];
       currentPreset = 'random';
       resetPitchCycle();
@@ -1314,7 +1727,7 @@
 
       pitchDownSteps += 1;
       if (pitchDownSteps > 3) {
-        restoreParams(pitchDownBase);
+        restoreParams({ ...pitchDownBase, mode: params.mode });
         resetPitchCycle();
         currentPreset = 'pitchReset';
         updateRecipe();
@@ -1336,6 +1749,14 @@
 
     function setPresetStatus(message) {
       document.getElementById('presetStatus').textContent = message;
+    }
+
+    function showControlExplanation(key) {
+      const [title, explanation] = controlDescriptions[key] || [
+        'Unknown Control',
+        'No terminal notes were recovered for this control.'
+      ];
+      document.getElementById('recipe').textContent = `CONTROL // ${title}\n${explanation}`;
     }
 
     function cleanPresetName(name) {
@@ -1401,6 +1822,55 @@
       return `${baseUrl}${query}`;
     }
 
+    function shuffled(items) {
+      const result = [...items];
+      for (let index = result.length - 1; index > 0; index--) {
+        const swapIndex = Math.floor(Math.random() * (index + 1));
+        [result[index], result[swapIndex]] = [result[swapIndex], result[index]];
+      }
+      return result;
+    }
+
+    function renderFeaturedSharedPresets() {
+      const row = document.getElementById('featuredPresetRow');
+      const availableNames = Object.keys(sharedPresets)
+        .filter(name => !housePresetNames.has(name.toLowerCase()));
+      const availableSet = new Set(availableNames);
+
+      featuredPresetNames = featuredPresetNames
+        .filter(name => availableSet.has(name))
+        .slice(0, 6);
+
+      const remainingNames = shuffled(
+        availableNames.filter(name => !featuredPresetNames.includes(name))
+      );
+      featuredPresetNames.push(
+        ...remainingNames.slice(0, Math.max(0, 6 - featuredPresetNames.length))
+      );
+
+      row.innerHTML = '';
+      if (!featuredPresetNames.length) {
+        const empty = document.createElement('div');
+        empty.className = 'featured-preset-empty';
+        empty.textContent = 'no user-made shared signals available yet';
+        row.appendChild(empty);
+        return;
+      }
+
+      featuredPresetNames.forEach(name => {
+        const button = document.createElement('button');
+        button.className = 'preset featured-shared-preset';
+        button.type = 'button';
+        button.dataset.sharedPreset = name;
+
+        const title = document.createElement('strong');
+        title.textContent = name;
+        button.append(title);
+        button.addEventListener('click', () => loadSavedPreset(name));
+        row.appendChild(button);
+      });
+    }
+
     function renderSavedPresetList() {
       const select = document.getElementById('savedPresetSelect');
       const names = Object.keys(sharedPresets).sort((a, b) => a.localeCompare(b));
@@ -1413,6 +1883,7 @@
         option.textContent = name;
         select.appendChild(option);
       });
+      renderFeaturedSharedPresets();
     }
 
     async function loadSharedPresets({ silent = false } = {}) {
@@ -1509,6 +1980,7 @@
       const record = sharedPresets[name];
       if (!name || !record) return;
       currentPreset = 'saved';
+      loadedSharedPresetName = name;
       resetPitchCycle();
       restoreParams(unpackPreset(record));
       document.getElementById('presetName').value = name;
@@ -1533,9 +2005,12 @@
         random: 'Randomized Signal\nNew settings. Unknown machine.',
         pitchedDown: 'Pitch Down ×2\nLower pass. Press again to keep falling.',
         pitchReset: 'Pitch Reset\nBack where it started.',
-        saved: 'Saved Preset\nLoaded from this browser.'
+        saved: `Shared Preset\n${loadedSharedPresetName || 'Unnamed signal'}\nMade by a Grey Red visitor.`
       };
-      document.getElementById('recipe').textContent = customRecipes[currentPreset] || presets[currentPreset].recipe;
+      document.getElementById('recipe').textContent =
+        customRecipes[currentPreset] ||
+        presets[currentPreset]?.recipe ||
+        'Unknown Signal\nNo recipe data recovered.';
     }
 
     function drawScope() {
@@ -1576,18 +2051,13 @@
 
     document.getElementById('playMain').addEventListener('click', () => playMachine());
     document.getElementById('randomizeSignal').addEventListener('click', randomizeSignal);
+    document.getElementById('exportWav').addEventListener('click', exportCurrentSoundWav);
     document.getElementById('pitchDown').addEventListener('click', pitchDownSignal);
     document.getElementById('savePreset').addEventListener('click', saveCurrentPreset);
     document.getElementById('refreshPresets').addEventListener('click', () => loadSharedPresets());
     document.getElementById('exportPresets').addEventListener('click', downloadPresetBackup);
     document.getElementById('savedPresetSelect').addEventListener('change', e => loadSavedPreset(e.target.value));
     window.addEventListener('keydown', handleKeyboardShortcuts);
-    document.querySelectorAll('[data-preset]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        applyPreset(btn.dataset.preset);
-        playMachine();
-      });
-    });
 
     sharedPresets = readPresetCache();
     renderControls();
