@@ -58,6 +58,10 @@ test.describe("Atrium deployment", () => {
       .poll(() => canvas.evaluate(element => element.width > 0 && element.height > 0))
       .toBeTruthy();
 
+    await expect(page.locator("#build-diagnostics")).toBeVisible();
+    await expect(page.locator("#build-version")).toHaveText("ATRIUM BETA 0.7.2");
+    await expect(page.locator("#fps-counter")).toHaveText(/^FPS \d+$/);
+
     expect(pageErrors).toEqual([]);
     expect(consoleErrors).toEqual([]);
   });
@@ -85,8 +89,42 @@ test.describe("Atrium deployment", () => {
     expect(bundle).toContain("RETURN HOME AND SLEEP");
     expect(bundle).toContain("LAUNCHED");
     expect(bundle).toContain("BOUND");
+    expect(bundle).toContain("SAFETY RESET");
+    expect(bundle).toContain("respawnAtLastSafePosition");
+    expect(bundle).toContain("burnedMovementMultiplier=.58");
+    expect(bundle).toContain("burnedVisibilityVeil");
+    expect(bundle).toContain("burnedAshParticle");
+    expect(bundle).toContain("burnedVisibilityGradient");
+    expect(bundle).not.toContain('"burnedDrawDistance"');
+    expect(bundle).toContain("t?12:55");
+    expect(bundle).toContain("t?.16:.035");
+    expect(bundle).not.toContain('anchor("bottomleft")');
+    expect(bundle).toContain("atriumStateFinalReveal");
+    expect(bundle).toContain("FINAL ATRIUM STATE");
+    expect(bundle).toContain("destroyAll(o),t.onComplete?.()");
+    expect(bundle).not.toContain("Xy(h)");
+    expect(bundle).toContain("secondAtriumFallMovieComplete");
+    expect(bundle).toContain('go("dream",{source:"townShard"})');
+    expect(bundle).toContain("wait(2.5,()=>tc(Y))");
+    expect(bundle).not.toContain(
+      'wait(.8,()=>go("dream",{source:"townShard"}))'
+    );
+    expect(bundle).toContain("postScaffoldHazardActive");
+    expect(bundle).toContain("setupPostScaffoldHazard(x)");
+    expect(bundle).toContain("postScaffoldDarkness");
+    expect(bundle).toContain(
+      "v.postScaffoldHazardActive=!1,v.atriumShutdownActive=!1"
+    );
+    expect(bundle).not.toContain(
+      'wt("oldTown",{fadeOut:.15,fadeIn:.45,maxOpacity:.85})'
+    );
     expect(bundle).toContain("The Bubble Board is yours. Have fun out there.");
-    expect(bundle).toContain("This procession looks like a celebration.");
+    expect(bundle).toContain(
+      "This processional... well, you would think they are celebrating."
+    );
+    expect(bundle).toContain("Man in the Hat");
+    expect(bundle).toContain("pianoManDialogue");
+    expect(bundle).not.toContain("const a=26,s=12,u=120,c=1");
 
     expect(bundle).not.toContain('p.onCollide("fanHaz"');
     expect(bundle).not.toContain("The spherical refractions fade with each dawn.");

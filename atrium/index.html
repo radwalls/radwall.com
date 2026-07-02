@@ -12,6 +12,40 @@
       @supports (width: 100dvw) {
         canvas { width: 100dvw !important; height: 100dvh !important; }
       }
+      #build-diagnostics {
+        position: fixed;
+        top: max(10px, env(safe-area-inset-top));
+        right: max(10px, env(safe-area-inset-right));
+        z-index: 10001;
+        display: grid;
+        justify-items: end;
+        gap: 2px;
+        padding: 7px 9px;
+        border: 1px solid rgba(158, 255, 174, 0.65);
+        border-radius: 3px;
+        background: rgba(3, 12, 7, 0.78);
+        color: #b7ffc2;
+        font: 700 11px/1.25 "Courier New", monospace;
+        letter-spacing: 0.04em;
+        text-shadow: 0 0 5px rgba(91, 255, 121, 0.7);
+        pointer-events: none;
+        user-select: none;
+      }
+      #burned-visibility-gradient {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 9000;
+        background: radial-gradient(
+          circle at 50% 50%,
+          rgba(8, 7, 8, 0) 0%,
+          rgba(8, 7, 8, 0.04) 28%,
+          rgba(8, 7, 8, 0.24) 46%,
+          rgba(8, 7, 8, 0.54) 68%,
+          rgba(8, 7, 8, 0.82) 100%
+        );
+        pointer-events: none;
+      }
       #landscape-guard {
         display: none;
         position: fixed;
@@ -65,10 +99,15 @@
         document.documentElement.classList.add("mobile-device");
       }
     </script>
-    <script type="module" crossorigin src="/atrium/assets/index-ChedvSPu.js?v=playtest-fixes-1"></script>
+    <script type="module" crossorigin src="/atrium/assets/index-ChedvSPu.js?v=playtest-fixes-9"></script>
   </head>
   <body>
     <div id="app"></div>
+    <div id="build-diagnostics" aria-label="Atrium build diagnostics">
+      <span id="build-version">ATRIUM BETA 0.7.2</span>
+      <span id="fps-counter">FPS --</span>
+    </div>
+    <div id="burned-visibility-gradient" aria-hidden="true"></div>
     <div id="landscape-guard" role="dialog" aria-modal="true" aria-label="Landscape orientation required">
       <div>
         <span class="rotate-icon" aria-hidden="true">&#8635;</span>
@@ -76,5 +115,25 @@
         <button id="landscape-lock-button" type="button">Play in landscape</button>
       </div>
     </div>
+    <script>
+      (() => {
+        const counter = document.getElementById("fps-counter");
+        let frames = 0;
+        let sampleStarted = performance.now();
+
+        function updateFps(now) {
+          frames += 1;
+          const elapsed = now - sampleStarted;
+          if (elapsed >= 500) {
+            counter.textContent = `FPS ${Math.round((frames * 1000) / elapsed)}`;
+            frames = 0;
+            sampleStarted = now;
+          }
+          requestAnimationFrame(updateFps);
+        }
+
+        requestAnimationFrame(updateFps);
+      })();
+    </script>
   </body>
 </html>
