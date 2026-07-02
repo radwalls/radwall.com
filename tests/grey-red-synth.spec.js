@@ -16,6 +16,51 @@ test.describe("Grey Red synth", () => {
     ).toHaveCount(1);
   });
 
+  test("features a random user-made selection instead of house presets", async ({
+    page
+  }) => {
+    const houseNames = [
+      "Distant Beacon",
+      "Ancient Sword Swing",
+      "Reactor Cough",
+      "Lock-On Ghost",
+      "Old Anime Power-Up",
+      "Servo Twitch"
+    ];
+    const userNames = [
+      "Glass Orchard",
+      "Rust Choir",
+      "Moon Relay",
+      "Broken Halo",
+      "Wet Circuit",
+      "Night Engine",
+      "Satellite Teeth"
+    ];
+    const rows = [...houseNames, ...userNames].map(name => ({
+      name,
+      params: { mode: "rise", reverb: "bunker" },
+      updated_at: "2026-07-02T00:00:00.000Z"
+    }));
+
+    await page.route(
+      "https://vrahcpgciumnyqsxghxv.supabase.co/rest/v1/**",
+      route =>
+        route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify(rows)
+        })
+    );
+    await page.goto(synthPath, { waitUntil: "domcontentloaded" });
+
+    const featured = page.locator("#featuredPresetRow .featured-shared-preset");
+    await expect(featured).toHaveCount(6);
+    const featuredNames = await featured.locator("strong").allTextContents();
+    expect(featuredNames.every(name => userNames.includes(name))).toBeTruthy();
+    expect(featuredNames.some(name => houseNames.includes(name))).toBeFalsy();
+    await expect(featured.locator("span")).toHaveCount(0);
+  });
+
   test("preserves and migrates cached presets before replacing the cache", async ({
     page
   }) => {
@@ -85,6 +130,22 @@ test.describe("Grey Red synth", () => {
     await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
 
+    await expect(page.locator("#exportPresets")).toHaveText(
+      "download preset backup"
+    );
+    const backupPresentation = await page.locator("#exportPresets").evaluate(button => ({
+      fontSize: parseFloat(getComputedStyle(button).fontSize),
+      parentClass: button.parentElement.className,
+      bottom: button.getBoundingClientRect().bottom + window.scrollY
+    }));
+    expect(backupPresentation.fontSize).toBeLessThanOrEqual(8);
+    expect(backupPresentation.parentClass).toContain("backup-footer");
+    expect(backupPresentation.bottom).toBeGreaterThan(
+      await page.locator(".layout").evaluate(
+        element => element.getBoundingClientRect().bottom + window.scrollY
+      )
+    );
+
     const downloadPromise = page.waitForEvent("download");
     await page.locator("#exportPresets").click();
     const download = await downloadPromise;
@@ -110,5 +171,116 @@ test.describe("Grey Red synth", () => {
     expect(presentation.statusColor).toBe("rgb(101, 255, 187)");
     expect(presentation.mainWidth).toBeLessThanOrEqual(presentation.viewportWidth);
     expect(presentation.horizontalOverflow).toBeFalsy();
+  });
+
+  test("explains every sound control and offers six pitch modes", async ({
+    page
+  }) => {
+    await page.goto(synthPath, { waitUntil: "domcontentloaded" });
+
+    const modeOptions = page.locator("#modeSelect option");
+    await expect(modeOptions).toHaveCount(6);
+    await expect(modeOptions).toHaveText([
+      "rise",
+      "fall",
+      "pulse",
+      "staircase",
+      "fracture",
+      "orbit"
+    ]);
+
+    const controls = page.locator(".control input, .control select");
+    await expect(controls).toHaveCount(17);
+    const explanations = [];
+    for (let index = 0; index < 17; index++) {
+      await controls.nth(index).focus();
+      explanations.push(await page.locator("#recipe").innerText());
+    }
+    expect(new Set(explanations).size).toBe(17);
+    expect(explanations.every(text => text.startsWith("CONTROL //"))).toBeTruthy();
+    expect(
+      await page.locator(".recipe").evaluate(
+        element => getComputedStyle(element, "::before").content
+      )
+    ).toContain("SIGNAL RECIPE / CONTROL NOTES");
+
+    await expect(page.locator("body")).not.toContainText(
+      "Tip: record a few passes"
+    );
+  });
+
+  test("places a working level slider inside the reverb control", async ({
+    page
+  }) => {
+    await page.goto(synthPath, { waitUntil: "domcontentloaded" });
+
+    const level = page.locator("#reverbLevel");
+    await expect(level).toBeVisible();
+    await expect(level).toHaveValue("1");
+    await expect(level).toHaveAttribute("max", "5");
+    expect(
+      await level.evaluate(input => ({
+        previous: input.parentElement.previousElementSibling.tagName,
+        next: input.parentElement.nextElementSibling.tagName
+      }))
+    ).toEqual({ previous: "LABEL", next: "SELECT" });
+
+    await level.fill("0.25");
+    await expect(page.locator("#v-reverbLevel")).toHaveText("25%");
+    const gains = await page.evaluate(() => {
+      initAudio();
+      updateReverb();
+      return {
+        actual: reverbWet.gain.value,
+        expected: getReverbSettings().wet * 0.25
+      };
+    });
+    expect(gains.actual).toBeCloseTo(gains.expected, 5);
+  });
+
+  test("pitch-down reset preserves the selected pitch mode", async ({ page }) => {
+    await page.goto(synthPath, { waitUntil: "domcontentloaded" });
+
+    await page.locator("#modeSelect").selectOption("staircase");
+    for (let press = 0; press < 4; press++) {
+      await page.locator("#pitchDown").click();
+    }
+
+    await expect(page.locator("#modeSelect")).toHaveValue("staircase");
+  });
+
+  test("exports the current sound as a valid WAV file", async ({ page }) => {
+    await page.goto(synthPath, { waitUntil: "domcontentloaded" });
+
+    const crusherSamples = await page.evaluate(() => {
+      const context = new OfflineAudioContext(1, 64, 44100);
+      const source = context.createBuffer(1, 64, 44100);
+      const input = source.getChannelData(0);
+      for (let index = 0; index < input.length; index++) {
+        input[index] = index / input.length;
+      }
+      return Array.from(
+        applyBitCrusher(context, source, 0.5).getChannelData(0)
+      );
+    });
+    expect(new Set(crusherSamples.slice(0, 19))).toEqual(new Set([0]));
+    expect(crusherSamples[19]).toBeGreaterThan(0);
+
+    const downloadPromise = page.waitForEvent("download", { timeout: 30_000 });
+    await page.locator("#exportWav").click();
+    const download = await downloadPromise;
+
+    expect(download.suggestedFilename()).toMatch(/\.wav$/);
+    const stream = await download.createReadStream();
+    const chunks = [];
+    for await (const chunk of stream) chunks.push(chunk);
+    const wav = Buffer.concat(chunks);
+    expect(wav.subarray(0, 4).toString("ascii")).toBe("RIFF");
+    expect(wav.subarray(8, 12).toString("ascii")).toBe("WAVE");
+    expect(wav.readUInt32LE(24)).toBe(
+      await page.evaluate(() => audioCtx.sampleRate)
+    );
+    expect(wav.length).toBeGreaterThan(44);
+    await expect(page.locator("#presetStatus")).toContainText("wav ready");
   });
 });
