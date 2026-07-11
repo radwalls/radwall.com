@@ -1941,9 +1941,9 @@
     }
 
     async function writeSharedPreset(name, presetParams) {
-      const response = await fetch(getSupabaseTableUrl('?on_conflict=owner,name'), {
+      const response = await fetch(getSupabaseTableUrl(), {
         method: 'POST',
-        headers: getSupabaseHeaders('resolution=merge-duplicates,return=minimal'),
+        headers: getSupabaseHeaders('return=minimal'),
         body: JSON.stringify({
           owner: supabaseConfig.owner,
           name,
@@ -1951,26 +1951,60 @@
           updated_at: new Date().toISOString()
         })
       });
-      if (!response.ok) throw new Error(`save failed ${response.status}`);
+      if (!response.ok) {
+        const error = new Error(`save failed ${response.status}`);
+        error.status = response.status;
+        throw error;
+      }
+    }
+
+    function makeUniquePresetName() {
+      const timestamp = new Date().toISOString().replace(/[-:.TZ]/g, '').slice(0, 14);
+      const suffix = Math.random().toString(36).slice(2, 6).padEnd(4, '0');
+      return `signal-${timestamp}-${suffix}`;
+    }
+
+    function findExistingPresetName(name) {
+      const normalizedName = name.toLocaleLowerCase();
+      return Object.keys(sharedPresets)
+        .find(existingName => existingName.toLocaleLowerCase() === normalizedName);
     }
 
     async function saveCurrentPreset() {
       const input = document.getElementById('presetName');
-      const name = cleanPresetName(input.value) || `signal-${new Date().toISOString().slice(0, 10)}`;
+      const name = cleanPresetName(input.value) || makeUniquePresetName();
       setPresetStatus('saving online...');
       try {
         await loadSharedPresets({ silent: true });
-        sharedPresets[name] = {
+
+        const existingName = findExistingPresetName(name);
+        if (existingName || housePresetNames.has(name.toLocaleLowerCase())) {
+          setPresetStatus('preset name already exists; nothing was overwritten');
+          input.value = existingName || name;
+          return;
+        }
+
+        const presetRecord = {
           params: snapshotParams(),
           updatedAt: new Date().toISOString()
         };
-        await writeSharedPreset(name, sharedPresets[name].params);
+        await writeSharedPreset(name, presetRecord.params);
+        sharedPresets[name] = presetRecord;
         writePresetCache(sharedPresets);
         setPresetStatus(`saved online (${Object.keys(sharedPresets).length})`);
         input.value = name;
         renderSavedPresetList();
         document.getElementById('savedPresetSelect').value = name;
       } catch (error) {
+        if (error.status === 409) {
+          await loadSharedPresets({ silent: true });
+          setPresetStatus('preset name already exists; nothing was overwritten');
+          return;
+        }
+        sharedPresets[name] = {
+          params: snapshotParams(),
+          updatedAt: new Date().toISOString()
+        };
         writePresetCache(sharedPresets);
         setPresetStatus('online save failed; saved to this browser only');
       }
