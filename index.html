@@ -7,6 +7,13 @@
     <style>
         body { font-family: Arial, sans-serif; margin:0; padding:0; background-color:#1a1a1a; color:#fff; display:flex; justify-content:center; align-items:center; min-height:100vh; }
         .album-container, .ep-container { display:flex; flex-direction:column; gap:20px; align-items:center; width:100%; }
+        .album-container { padding-top:34px; box-sizing:border-box; }
+        .arrival-line { position:relative; width:min(720px,86vw); padding:12px 0 18px; color:#535b5b; font-size:9px; letter-spacing:.34em; text-align:center; text-transform:uppercase; overflow:hidden; }
+        .arrival-line::before { content:''; position:absolute; left:0; right:0; bottom:4px; height:1px; background:linear-gradient(90deg,transparent,rgba(0,255,204,.12),rgba(120,150,150,.2),rgba(0,255,204,.12),transparent); }
+        .arrival-line::after { content:''; position:absolute; bottom:2px; left:8%; width:3px; height:3px; border-radius:50%; background:#8aa; opacity:.22; box-shadow:78px -5px #788,164px 1px #6a8,252px -3px #899,361px 0 #587,477px -5px #788,590px 1px #6a8; animation:signalDrift 7s ease-in-out infinite alternate; }
+        .arrival-line span { animation:signalPulse 5.5s ease-in-out infinite; }
+        @keyframes signalPulse { 0%,100%{opacity:.32} 48%{opacity:.68} 52%{opacity:.46} }
+        @keyframes signalDrift { from{transform:translateX(-6px);filter:blur(.2px)} to{transform:translateX(9px);filter:blur(.6px)} }
         .album-row, .ep-row { display:flex; gap:20px; flex-wrap:wrap; justify-content:center; width:100%; }
         h2 { margin:10px 0 0px; color:#00ffcc; }
         .divider { width:80%; height:2px; background-color:#555; margin:20px 0; }
@@ -246,6 +253,7 @@
 <body>
     <div id="particles-js"></div>
     <div class="album-container" id="album-container">
+        <div class="arrival-line" aria-label="Current transmission"><span>Radwalls transmission · somewhere between signal and soil</span></div>
         <div class="ep-row">
             <div class="ep-card" onclick="openAlbumPage('ep1','sand')"><img src="ep-roads-of-oil-cover.jpg" alt="Roads of Oil"></div>
         </div>
@@ -261,7 +269,7 @@
             <div class="eyebrow">Rad Walls × Endless Vocals</div>
             <h3 id="plugin-feature-title">One knob. Better sound.</h3>
             <p>Nine fast, musical plug-ins for vocals, guitars, synths, drums, and anything else you record. Built to help singers practice with a finished sound—without needing to become an audio engineer first.</p>
-            <a href="plugins.html">Explore the EZ One-Knob Suite</a>
+            <a href="https://endlessvocals.com/shop.html#ez-plugins" target="_blank" rel="noopener">Shop plug-ins, training packs &amp; Valveheart</a>
         </section>
 
  <div class="divider"></div>
@@ -641,8 +649,7 @@
         </p>
         <img class="coaching-photo" src="endless-vocals-logo.png" alt="Endless Vocals logo">
         <div class="coaching-links">
-            <a class="coaching-link" href="https://discord.gg/eQMNpUA687" target="_blank" rel="noopener">Join the Endless Vocals Discord</a>
-            <a class="coaching-link" href="https://endlessvocals.com" target="_blank" rel="noopener">Visit EndlessVocals.com</a>
+            <a class="coaching-link" href="https://endlessvocals.com/join.html" target="_blank" rel="noopener">JOIN!</a>
         </div>
     </div>
     <button class="back-button" onclick="closeAlbumPage('vocal-coaching')" style="margin-top:30px;">Back</button>
