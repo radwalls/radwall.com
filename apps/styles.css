@@ -1,0 +1,70 @@
+:root {
+  color-scheme: dark;
+  --bg: #0d0d0e;
+  --panel: #171719;
+  --line: #303034;
+  --text: #f4f2ef;
+  --muted: #9a9691;
+  --mint: #4af0b8;
+  --purple: #9161ff;
+  --red: #d14b3f;
+}
+
+* { box-sizing: border-box; }
+body { margin:0; color:var(--text); background:var(--bg); font-family:Arial,Helvetica,sans-serif; }
+a { color:inherit; }
+img { display:block; max-width:100%; }
+.shell { width:min(1160px,calc(100% - 40px)); margin:0 auto; }
+
+.site-header { min-height:78px; display:flex; align-items:center; justify-content:space-between; gap:24px; border-bottom:1px solid var(--line); }
+.brand { color:var(--text); text-decoration:none; font-size:16px; font-weight:800; letter-spacing:.18em; text-transform:uppercase; }
+.brand span { color:#6d6a67; font-weight:400; }
+nav { display:flex; gap:18px; flex-wrap:wrap; }
+nav a { color:var(--muted); text-decoration:none; font-size:13px; }
+nav a:hover,nav a:focus-visible { color:var(--text); }
+
+.hero { padding:110px 0 80px; }
+.eyebrow { margin:0 0 18px; color:#74716d; font:700 11px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.22em; text-transform:uppercase; }
+h1,h2,h3 { margin:0; line-height:.95; letter-spacing:-.05em; }
+h1 { max-width:900px; font-size:clamp(60px,9vw,120px); font-weight:800; }
+.hero > p:not(.eyebrow) { max-width:650px; margin:28px 0 0; color:var(--muted); font-size:21px; line-height:1.5; }
+
+.app-list { display:grid; gap:34px; padding-bottom:90px; }
+.app-card { display:grid; grid-template-columns:minmax(0,1fr) minmax(280px,.72fr); min-height:680px; overflow:hidden; border:1px solid var(--line); border-radius:18px; background:var(--panel); }
+.app-copy { padding:clamp(34px,6vw,72px); align-self:center; }
+.app-copy h2 { font-size:clamp(56px,8vw,104px); }
+.status { display:inline-flex; margin:20px 0; padding:8px 11px; border:1px solid currentColor; border-radius:999px; font:700 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.14em; text-transform:uppercase; }
+.app-copy > p { max-width:580px; color:var(--muted); font-size:18px; line-height:1.6; }
+.facts { display:flex; flex-wrap:wrap; gap:8px; margin:24px 0; }
+.facts span { padding:7px 10px; border:1px solid var(--line); border-radius:4px; color:#b7b4b0; font:700 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.08em; text-transform:uppercase; }
+.actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:28px; }
+.button { display:inline-flex; min-height:46px; align-items:center; padding:0 16px; border:1px solid #48484c; border-radius:6px; color:var(--text); text-decoration:none; font-size:13px; font-weight:800; }
+.app-image { width:100%; height:100%; max-height:760px; align-self:end; object-fit:cover; object-position:top; border-left:1px solid var(--line); }
+
+.ownstems { background:radial-gradient(circle at 14% 5%,rgba(145,97,255,.2),transparent 36%),#11111a; }
+.ownstems .eyebrow,.ownstems .status { color:var(--mint); }
+.ownstems .button-primary { color:#07130f; border-color:var(--mint); background:var(--mint); }
+.gr-synth { background:radial-gradient(circle at 10% 8%,rgba(209,75,63,.2),transparent 38%),#140f0f; }
+.gr-synth .eyebrow,.gr-synth .status { color:#ee6256; }
+.gr-synth .button-primary { border-color:var(--red); background:var(--red); }
+
+.cross-link { margin-bottom:90px; padding:40px; border-top:1px solid var(--line); border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; gap:30px; }
+.cross-link h2 { font-size:clamp(34px,5vw,64px); }
+.cross-link p { color:var(--muted); }
+
+footer { padding:0 0 50px; color:#6f6c68; font-size:12px; }
+.footer-inner { display:flex; justify-content:space-between; gap:20px; flex-wrap:wrap; }
+.footer-inner a { color:#8e8a85; }
+
+@media(max-width:800px){
+  .app-card { grid-template-columns:1fr; }
+  .app-image { max-height:760px; border-left:0; border-top:1px solid var(--line); }
+  .cross-link { align-items:flex-start; flex-direction:column; }
+}
+@media(max-width:560px){
+  .shell { width:min(100% - 28px,1160px); }
+  .site-header { align-items:flex-start; padding:18px 0; }
+  nav { justify-content:flex-end; gap:10px; }
+  .hero { padding:74px 0 56px; }
+  .app-copy { padding:30px 24px; }
+}
