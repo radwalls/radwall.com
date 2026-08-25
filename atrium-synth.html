@@ -3,46 +3,894 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Atrium Glass Corruption Synth</title>
+  <title>Atrium Glassworks</title>
   <style>
-    :root{--bg:#06100f;--panel:rgba(9,23,21,.9);--panel2:rgba(15,38,35,.92);--text:#eafff8;--muted:#91d8c8;--line:rgba(112,255,218,.24);--hot:#45ffc5;--violet:#a98cff}
-    *{box-sizing:border-box} body{margin:0;min-height:100vh;font-family:"Courier New",monospace;color:var(--text);background:radial-gradient(circle at 48% 15%,rgba(69,255,197,.16),transparent 27%),radial-gradient(circle at 83% 72%,rgba(169,140,255,.16),transparent 31%),linear-gradient(145deg,#020605,#06100f 56%,#121022);overflow-x:hidden}
-    body:before{content:"";position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 1px,transparent 1px 5px),linear-gradient(90deg,transparent 0 48%,rgba(69,255,197,.07) 49% 51%,transparent 52%);opacity:.45}
-    main{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:28px 0 44px}.home-link{display:inline-block;margin-bottom:18px;color:var(--muted);text-decoration:none;font-size:12px;letter-spacing:.16em;text-transform:uppercase}
-    h1{margin:0;font-size:clamp(31px,6vw,72px);line-height:.9;letter-spacing:-.07em;text-transform:uppercase;text-shadow:0 0 22px rgba(69,255,197,.45)}.subtitle{max-width:850px;color:var(--muted);line-height:1.5}.layout{display:grid;grid-template-columns:1.08fr .92fr;gap:18px}@media(max-width:920px){.layout{grid-template-columns:1fr}}
-    .panel{border:1px solid var(--line);border-radius:22px;background:var(--panel);box-shadow:0 28px 90px rgba(0,0,0,.42),inset 0 0 44px rgba(69,255,197,.04);backdrop-filter:blur(12px);padding:18px}.play-dock{position:sticky;top:10px;z-index:10;display:grid;gap:10px;margin-bottom:16px}
-    button{border:1px solid var(--line);border-radius:14px;background:linear-gradient(180deg,rgba(36,82,75,.94),rgba(8,19,18,.94));color:var(--text);cursor:pointer;font:inherit;padding:12px 14px}button:hover{border-color:rgba(69,255,197,.75);box-shadow:0 0 22px rgba(69,255,197,.16)}.big-play{padding:18px;font-size:20px;font-weight:700;background:linear-gradient(180deg,rgba(69,255,197,.36),rgba(17,32,33,.98))}
-    .utility-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}@media(max-width:680px){.controls,.utility-row{grid-template-columns:1fr}}
-    .control{background:var(--panel2);border:1px solid var(--line);border-radius:16px;padding:12px}label{display:flex;justify-content:space-between;gap:12px;margin-bottom:8px;color:var(--muted);font-size:12px;letter-spacing:.08em;text-transform:uppercase}input,select{width:100%;accent-color:var(--hot)}select{padding:10px;border-radius:12px;border:1px solid var(--line);background:#06110f;color:var(--text);font:inherit}
-    canvas{width:100%;height:280px;display:block;border-radius:18px;border:1px solid var(--line);background:#010403}.readout{min-height:172px;margin-top:14px;padding:14px;border-radius:16px;border:1px solid var(--line);background:rgba(2,7,6,.76);color:var(--muted);line-height:1.45;white-space:pre-line}.preset-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}@media(max-width:620px){.preset-row{grid-template-columns:1fr}}.preset{text-align:left;min-height:76px}.preset strong{display:block;color:#fff;margin-bottom:5px}.preset span{display:block;color:var(--muted);font-size:12px;line-height:1.35}
+    :root {
+      --bg: #030706;
+      --panel: rgba(8, 20, 18, 0.93);
+      --panel-2: rgba(13, 35, 31, 0.94);
+      --text: #eafff8;
+      --muted: #8fcfbe;
+      --line: rgba(112, 255, 218, 0.23);
+      --hot: #45ffc5;
+      --violet: #aa8dff;
+      --danger: #ffdfef;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { background: var(--bg); }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      overflow-x: hidden;
+      color: var(--text);
+      font-family: "Courier New", monospace;
+      background:
+        radial-gradient(circle at 48% 13%, rgba(69, 255, 197, 0.16), transparent 27%),
+        radial-gradient(circle at 83% 72%, rgba(169, 140, 255, 0.15), transparent 31%),
+        linear-gradient(145deg, #020605, #06100f 56%, #121022);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      opacity: 0.48;
+      background:
+        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.022) 0 1px, transparent 1px 5px),
+        linear-gradient(90deg, transparent 0 48%, rgba(69, 255, 197, 0.07) 49% 51%, transparent 52%);
+    }
+
+    main {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 22px 0 48px;
+    }
+
+    .site-rail {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 22px;
+      padding-bottom: 11px;
+      border-bottom: 1px solid rgba(112, 255, 218, 0.13);
+      color: rgba(234, 255, 248, 0.45);
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .site-rail a,
+    .site-footer a { color: var(--muted); text-decoration: none; }
+    .site-rail a:hover,
+    .site-footer a:hover { color: var(--hot); }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(34px, 7vw, 78px);
+      line-height: 0.88;
+      letter-spacing: -0.075em;
+      text-transform: uppercase;
+      text-shadow: 0 0 22px rgba(69, 255, 197, 0.45);
+    }
+
+    .subtitle {
+      max-width: 850px;
+      margin: 18px 0 24px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.08fr 0.92fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: var(--panel);
+      box-shadow: 0 28px 90px rgba(0, 0, 0, 0.42), inset 0 0 44px rgba(69, 255, 197, 0.04);
+      backdrop-filter: blur(12px);
+    }
+
+    .play-dock {
+      position: sticky;
+      top: 10px;
+      z-index: 30;
+      display: grid;
+      gap: 9px;
+      margin-bottom: 18px;
+      padding: 7px;
+      border: 1px solid rgba(112, 255, 218, 0.17);
+      border-radius: 18px;
+      background: rgba(3, 12, 10, 0.93);
+      box-shadow: 0 14px 36px rgba(0, 0, 0, 0.38);
+      backdrop-filter: blur(14px);
+    }
+
+    button {
+      min-width: 0;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      color: var(--text);
+      background: linear-gradient(180deg, rgba(36, 82, 75, 0.94), rgba(8, 19, 18, 0.96));
+      cursor: pointer;
+      font: inherit;
+    }
+
+    button:hover,
+    button:focus-visible {
+      border-color: rgba(69, 255, 197, 0.76);
+      box-shadow: 0 0 22px rgba(69, 255, 197, 0.16);
+      outline: none;
+    }
+
+    button:disabled { cursor: wait; opacity: 0.62; }
+
+    .big-play {
+      padding: 17px;
+      font-size: 19px;
+      font-weight: 700;
+      background: linear-gradient(180deg, rgba(69, 255, 197, 0.36), rgba(17, 32, 33, 0.98));
+    }
+
+    .big-play.is-playing {
+      color: #08120f;
+      background: linear-gradient(180deg, #8affda, #36bd96);
+    }
+
+    .utility-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .section-title {
+      margin: 4px 0 10px;
+      color: rgba(234, 255, 248, 0.58);
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .control {
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--panel-2);
+    }
+
+    label {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+    }
+
+    input,
+    select { width: 100%; accent-color: var(--hot); }
+
+    select {
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      color: var(--text);
+      background: #06110f;
+      font: inherit;
+    }
+
+    .fracture-strip {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 10px;
+      align-items: center;
+      margin: 16px 0;
+      color: var(--muted);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .fracture-track {
+      height: 5px;
+      overflow: hidden;
+      border-radius: 99px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .fracture-fill {
+      width: 100%;
+      height: 100%;
+      transform: scaleX(0);
+      transform-origin: left;
+      background: linear-gradient(90deg, var(--hot), var(--violet), var(--danger));
+      box-shadow: 0 0 12px rgba(169, 140, 255, 0.7);
+      transition: transform 0.16s ease;
+    }
+
+    .note-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(42px, 1fr));
+      gap: 5px;
+      margin-top: 8px;
+    }
+
+    .note {
+      min-height: 82px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 10px 4px;
+      color: rgba(234, 255, 248, 0.72);
+      background: linear-gradient(180deg, rgba(232, 255, 249, 0.14), rgba(7, 19, 17, 0.92));
+      font-size: 11px;
+    }
+
+    canvas {
+      width: 100%;
+      height: 280px;
+      display: block;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #010403;
+    }
+
+    .readout {
+      min-height: 190px;
+      margin-top: 14px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      color: var(--muted);
+      background: rgba(2, 7, 6, 0.76);
+      line-height: 1.45;
+      white-space: pre-line;
+    }
+
+    .preset-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .preset { min-height: 82px; text-align: left; }
+    .preset strong { display: block; margin-bottom: 5px; color: #fff; }
+    .preset span { display: block; color: var(--muted); font-size: 12px; line-height: 1.35; }
+
+    .site-footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      margin-top: 24px;
+      padding: 16px 2px 0;
+      border-top: 1px solid rgba(112, 255, 218, 0.13);
+      color: rgba(234, 255, 248, 0.42);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    @media (max-width: 920px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 700px) {
+      body { padding-bottom: 126px; }
+      main { width: min(100% - 20px, 620px); padding-top: 14px; }
+      .site-rail span { display: none; }
+      .panel { padding: 12px; border-radius: 17px; }
+      .controls { grid-template-columns: 1fr; }
+      .play-dock {
+        position: fixed;
+        inset: auto 8px max(8px, env(safe-area-inset-bottom)) 8px;
+        margin: 0;
+        padding: 7px;
+        border-color: rgba(69, 255, 197, 0.4);
+        box-shadow: 0 10px 42px rgba(0, 0, 0, 0.72), 0 0 22px rgba(69, 255, 197, 0.09);
+      }
+      .big-play { padding: 12px; font-size: 15px; }
+      .utility-row button { padding: 9px 5px; font-size: 10px; }
+      .note-grid { grid-template-columns: repeat(7, minmax(34px, 1fr)); gap: 3px; }
+      .note { min-height: 64px; font-size: 9px; }
+      .preset-row { grid-template-columns: 1fr; }
+      .site-footer { padding-bottom: 16px; }
+    }
   </style>
 </head>
 <body>
   <main>
-    <a class="home-link" href="index.html">← Radwalls</a>
-    <header><h1>Atrium Synth</h1><p class="subtitle">Chosen style: clean glass FM and organ-like pads, with corruption that folds pitch, smears the room, and lets green digital damage creep in.</p></header>
+    <nav class="site-rail" aria-label="Radwalls site context">
+      <a href="index.html">← Radwalls music</a>
+      <span>The Atrium / hidden signal room</span>
+    </nav>
+
+    <header>
+      <h1>Atrium Glassworks</h1>
+      <p class="subtitle">Strike the structure and let it ring. Each tone adds stress until the glass can no longer hold, breaks into scattered shards, and begins building again.</p>
+    </header>
+
     <div class="layout">
       <section class="panel">
-        <div class="play-dock"><button class="big-play" id="playButton">Start Atrium Signal</button><div class="utility-row"><button id="randomButton">Randomize</button><button id="mutateButton">Corrupt Slightly</button><button id="exportButton">Export .wav</button></div></div>
+        <div class="play-dock" id="playDock">
+          <button class="big-play" id="playButton" type="button">Start Glass Cycle</button>
+          <div class="utility-row">
+            <button id="randomButton" type="button">Randomize</button>
+            <button id="strikeButton" type="button">Strike Glass</button>
+            <button id="exportButton" type="button">Export .wav</button>
+          </div>
+        </div>
+
+        <h2 class="section-title">Glass controls</h2>
         <div class="controls" id="controls"></div>
+
+        <div class="fracture-strip" aria-label="Current glass fracture">
+          <span>Fracture</span>
+          <div class="fracture-track"><div class="fracture-fill" id="fractureFill"></div></div>
+          <span id="fractureText">0%</span>
+        </div>
+
+        <h2 class="section-title">Strike individual panes</h2>
+        <div class="note-grid" id="noteGrid"></div>
       </section>
-      <aside class="panel"><canvas id="scope" width="900" height="360"></canvas><div class="readout" id="readout"></div><div class="preset-row" id="presetRow"></div></aside>
+
+      <aside class="panel">
+        <canvas id="scope" width="900" height="360" aria-label="Atrium glass waveform"></canvas>
+        <div class="readout" id="readout" aria-live="polite"></div>
+        <div class="preset-row" id="presetRow"></div>
+      </aside>
     </div>
+
+    <footer class="site-footer">
+      <span>Radwalls / The Atrium</span>
+      <a href="index.html">Return to the albums</a>
+    </footer>
   </main>
+
   <script>
-    const spec=[["root","Root Pitch",48,84,1],["spread","Glass Spread",0,1,.01],["choir","Choir Layer",0,1,.01],["corrupt","Corruption",0,1,.01],["jitter","Pitch Jitter",0,1,.01],["filter","Light Filter",0,1,.01],["delay","Echo Memory",0,1,.01],["room","Atrium Room",0,1,.01],["pulse","Green Pulse",0,1,.01]];
-    const modes=["glass","choir","elevator","broken"], defaults={root:64,spread:.42,choir:.34,corrupt:.18,jitter:.12,filter:.62,delay:.38,room:.58,pulse:.26,mode:"glass"}; let p={...defaults}, ac, master, analyser, voices=[], nodes={}, playing=false, raf=0;
-    const presets=[["Clean Atrium","bright glass tones, barely damaged",{root:67,spread:.38,choir:.25,corrupt:.06,jitter:.05,filter:.72,delay:.28,room:.42,pulse:.18,mode:"glass"}],["Green Fault","clean body with corrupt signal riding it",{root:61,spread:.5,choir:.34,corrupt:.48,jitter:.36,filter:.55,delay:.48,room:.62,pulse:.54,mode:"broken"}],["Pre-Labs Choir","soft organ pad through a cold room",{root:57,spread:.29,choir:.78,corrupt:.16,jitter:.11,filter:.5,delay:.34,room:.8,pulse:.14,mode:"choir"}],["Elevator Afterimage","rising metallic shimmer and delay",{root:72,spread:.68,choir:.18,corrupt:.28,jitter:.22,filter:.83,delay:.66,room:.52,pulse:.42,mode:"elevator"}]];
-    const controls=document.getElementById("controls"), cv=document.getElementById("scope"), cx=cv.getContext("2d"), readout=document.getElementById("readout");
-    spec.forEach(s=>controls.insertAdjacentHTML("beforeend",`<div class="control"><label for="${s[0]}">${s[1]} <span data-v="${s[0]}"></span></label><input id="${s[0]}" type="range" min="${s[2]}" max="${s[3]}" step="${s[4]}"></div>`)); controls.insertAdjacentHTML("beforeend",`<div class="control"><label for="mode">Signal Shape</label><select id="mode">${modes.map(m=>`<option value="${m}">${m}</option>`).join("")}</select></div>`);
-    function hz(n){return 440*Math.pow(2,(n-69)/12)} function curve(a){const c=new Float32Array(2048),k=1+a*90;for(let i=0;i<c.length;i++){const x=i*2/c.length-1;c[i]=Math.tanh(k*x)/Math.tanh(k)}return c} function imp(c,s,d){const b=c.createBuffer(2,c.sampleRate*s,c.sampleRate);for(let ch=0;ch<2;ch++){const data=b.getChannelData(ch);for(let i=0;i<data.length;i++)data[i]=(Math.random()*2-1)*Math.pow(1-i/data.length,d)}return b} function ratios(){return p.mode==="choir"?[.5,1,1.005,1.5,2]:p.mode==="elevator"?[1,1.25,1.5,2.01,3.02]:p.mode==="broken"?[.51,1,1.41,1.93,2.68]:[1,1.5,2,2.5,4]}
-    function apply(){document.querySelectorAll("input,select").forEach(e=>e.value=p[e.id]);document.querySelectorAll("[data-v]").forEach(e=>e.textContent=e.dataset.v==="root"?p.root:Math.round(p[e.dataset.v]*100)+"%");if(ac){const b=hz(p.root);nodes.f.frequency.setTargetAtTime(550+p.filter*5200,ac.currentTime,.04);nodes.f.Q.setTargetAtTime(1+p.corrupt*9,ac.currentTime,.04);nodes.d.delayTime.setTargetAtTime(.08+p.delay*.72,ac.currentTime,.05);nodes.dw.gain.setTargetAtTime(p.delay*.42,ac.currentTime,.04);nodes.fb.gain.setTargetAtTime(.12+p.delay*.56,ac.currentTime,.04);nodes.rw.gain.setTargetAtTime(p.room*.72,ac.currentTime,.04);nodes.pg.gain.setTargetAtTime(p.pulse*(.12+p.corrupt*.28),ac.currentTime,.04);nodes.sh.curve=curve(p.corrupt);voices.forEach((v,i)=>{v.c.frequency.setTargetAtTime(b*ratios()[i%ratios().length],ac.currentTime,.05);v.c.detune.setTargetAtTime((i-2)*p.spread*18,ac.currentTime,.05);v.m.frequency.setTargetAtTime(b*(1.5+i*.22+p.corrupt),ac.currentTime,.05);v.mg.gain.setTargetAtTime(12+p.corrupt*180+p.jitter*60,ac.currentTime,.05);v.g.gain.setTargetAtTime(i>2?p.choir*.12:.1,ac.currentTime,.05)})}readout.textContent=`STYLE\nClean Atrium glass, hollow choir, controlled corruption.\n\nCURRENT PATCH\nRoot ${p.root}, ${p.mode}\nCorruption ${Math.round(p.corrupt*100)}%\nGreen pulse ${Math.round(p.pulse*100)}%\nRoom ${Math.round(p.room*100)}%\n\nUSE\nLow corruption: menu pads, labs rooms, glass UI.\nHigh corruption: state reveal, Dark One, broken Atrium events.`}
-    async function start(){if(!ac){ac=new(AudioContext||webkitAudioContext)();master=ac.createGain();master.gain.value=.72;analyser=ac.createAnalyser();analyser.fftSize=2048;nodes.f=ac.createBiquadFilter();nodes.f.type="lowpass";nodes.sh=ac.createWaveShaper();nodes.d=ac.createDelay(1.2);nodes.dw=ac.createGain();nodes.fb=ac.createGain();nodes.rv=ac.createConvolver();nodes.rv.buffer=imp(ac,2.4,2.7);nodes.rw=ac.createGain();nodes.pg=ac.createGain();const mix=ac.createGain();for(let i=0;i<5;i++){const c=ac.createOscillator(),m=ac.createOscillator(),mg=ac.createGain(),g=ac.createGain();c.type=i%2?"triangle":"sine";m.connect(mg);mg.connect(c.frequency);c.connect(g);g.connect(mix);c.start();m.start();voices.push({c,m,mg,g})}const po=ac.createOscillator();po.type="sawtooth";po.frequency.value=31;po.connect(nodes.pg);nodes.pg.connect(mix);po.start();mix.connect(nodes.f);nodes.f.connect(nodes.sh);nodes.sh.connect(master);nodes.sh.connect(nodes.d);nodes.d.connect(nodes.fb);nodes.fb.connect(nodes.d);nodes.d.connect(nodes.dw);nodes.dw.connect(master);master.connect(nodes.rv);nodes.rv.connect(nodes.rw);nodes.rw.connect(analyser);master.connect(analyser);analyser.connect(ac.destination)} if(ac.state==="suspended")await ac.resume();playing=true;playButton.textContent="Stop Atrium Signal";apply();draw()}
-    function stop(){playing=false;playButton.textContent="Start Atrium Signal";if(master)master.gain.setTargetAtTime(.0001,ac.currentTime,.03);setTimeout(()=>{if(master)master.gain.value=.72},120);cancelAnimationFrame(raf)}
-    function draw(){if(!playing)return;const a=new Uint8Array(analyser.frequencyBinCount);analyser.getByteTimeDomainData(a);cx.fillStyle="#010403";cx.fillRect(0,0,cv.width,cv.height);cx.strokeStyle="rgba(69,255,197,.78)";cx.beginPath();a.forEach((v,i)=>{const x=i/(a.length-1)*cv.width,y=v/255*cv.height;i?cx.lineTo(x,y):cx.moveTo(x,y)});cx.stroke();raf=requestAnimationFrame(draw)}
-    function set(x){p={...p,...x};apply()} document.querySelectorAll("input,select").forEach(e=>e.addEventListener("input",()=>{p[e.id]=e.type==="range"?Number(e.value):e.value;apply()})); playButton.onclick=()=>playing?stop():start(); randomButton.onclick=()=>set({root:52+Math.floor(Math.random()*29),spread:Math.random(),choir:Math.random(),corrupt:Math.random()*.72,jitter:Math.random()*.7,filter:Math.random(),delay:Math.random(),room:.2+Math.random()*.8,pulse:Math.random(),mode:modes[Math.floor(Math.random()*modes.length)]}); mutateButton.onclick=()=>set({corrupt:Math.min(1,p.corrupt+.12),jitter:Math.min(1,p.jitter+.08),pulse:Math.min(1,p.pulse+.1)});
-    function renderExport(){const sr=ac?.sampleRate||48000,dur=6,o=new OfflineAudioContext(2,sr*dur,sr),out=o.createGain(),f=o.createBiquadFilter(),sh=o.createWaveShaper(),del=o.createDelay(1.2),fb=o.createGain(),dw=o.createGain(),rv=o.createConvolver(),rw=o.createGain();out.gain.value=.72;f.type="lowpass";f.frequency.value=550+p.filter*5200;f.Q.value=1+p.corrupt*9;sh.curve=curve(p.corrupt);del.delayTime.value=.08+p.delay*.72;fb.gain.value=.12+p.delay*.56;dw.gain.value=p.delay*.42;rv.buffer=imp(o,2.4,2.7);rw.gain.value=p.room*.72;const b=hz(p.root),rs=ratios();for(let i=0;i<5;i++){const c=o.createOscillator(),m=o.createOscillator(),mg=o.createGain(),g=o.createGain();c.type=i%2?"triangle":"sine";c.frequency.value=b*rs[i%rs.length];c.detune.value=(i-2)*p.spread*18;m.frequency.value=b*(1.5+i*.22+p.corrupt);mg.gain.value=12+p.corrupt*180+p.jitter*60;g.gain.value=i>2?p.choir*.12:.1;m.connect(mg);mg.connect(c.frequency);c.connect(g);g.connect(f);c.start();m.start();c.stop(dur);m.stop(dur)}const po=o.createOscillator(),pg=o.createGain();po.type="sawtooth";po.frequency.value=31;pg.gain.value=p.pulse*(.12+p.corrupt*.28);po.connect(pg);pg.connect(f);po.start();po.stop(dur);f.connect(sh);sh.connect(out);sh.connect(del);del.connect(fb);fb.connect(del);del.connect(dw);dw.connect(out);out.connect(rv);rv.connect(rw);rw.connect(o.destination);out.connect(o.destination);return o.startRendering()} function wav(b){const l=b.length*b.numberOfChannels*2+44,v=new DataView(new ArrayBuffer(l)),w=(o,s)=>[...s].forEach((c,i)=>v.setUint8(o+i,c.charCodeAt(0)));w(0,"RIFF");v.setUint32(4,l-8,true);w(8,"WAVE");w(12,"fmt ");v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,b.numberOfChannels,true);v.setUint32(24,b.sampleRate,true);v.setUint32(28,b.sampleRate*b.numberOfChannels*2,true);v.setUint16(32,b.numberOfChannels*2,true);v.setUint16(34,16,true);w(36,"data");v.setUint32(40,l-44,true);let o=44;for(let i=0;i<b.length;i++)for(let ch=0;ch<b.numberOfChannels;ch++){const s=Math.max(-1,Math.min(1,b.getChannelData(ch)[i]));v.setInt16(o,s<0?s*32768:s*32767,true);o+=2}return new Blob([v],{type:"audio/wav"})} exportButton.onclick=async()=>{const b=await renderExport(),a=document.createElement("a");a.href=URL.createObjectURL(wav(b));a.download=`atrium-synth-${Date.now()}.wav`;a.click();URL.revokeObjectURL(a.href)};
-    presets.forEach(([n,t,pa])=>{const b=document.createElement("button");b.className="preset";b.innerHTML=`<strong>${n}</strong><span>${t}</span>`;b.onclick=()=>set(pa);presetRow.appendChild(b)});apply();
+    const controlSpec = [
+      ["root", "Root pane", 45, 72, 1],
+      ["ring", "Ring time", 0, 1, 0.01],
+      ["size", "Glass size", 0, 1, 0.01],
+      ["strikeRate", "Strike rate", 0, 1, 0.01],
+      ["resonance", "Resonance", 0, 1, 0.01],
+      ["fracture", "Break speed", 0, 1, 0.01],
+      ["scatter", "Shard scatter", 0, 1, 0.01],
+      ["echo", "Echo memory", 0, 1, 0.01],
+      ["room", "Atrium room", 0, 1, 0.01]
+    ];
+
+    const modes = ["crystal", "chapel", "elevator", "fault"];
+    const modeSequences = {
+      crystal: [0, 7, 12, 3, 10, 15, 7, 19],
+      chapel: [0, 12, 7, 15, 10, 19, 3, 22],
+      elevator: [0, 3, 7, 10, 14, 17, 22, 26],
+      fault: [0, 1, 8, 3, 13, 6, 17, 11]
+    };
+
+    const defaults = {
+      root: 55,
+      ring: 0.72,
+      size: 0.52,
+      strikeRate: 0.42,
+      resonance: 0.68,
+      fracture: 0.48,
+      scatter: 0.36,
+      echo: 0.34,
+      room: 0.62,
+      mode: "crystal"
+    };
+
+    let params = { ...defaults };
+    let audioContext;
+    let master;
+    let analyser;
+    let effects;
+    let playing = false;
+    let sequenceTimer = 0;
+    let sequenceStep = 0;
+    let strikesSinceBreak = 0;
+    let animationFrame = 0;
+    let shatterCount = 0;
+    let lastEvent = "waiting for a strike";
+
+    const controls = document.getElementById("controls");
+    const playButton = document.getElementById("playButton");
+    const randomButton = document.getElementById("randomButton");
+    const strikeButton = document.getElementById("strikeButton");
+    const exportButton = document.getElementById("exportButton");
+    const fractureFill = document.getElementById("fractureFill");
+    const fractureText = document.getElementById("fractureText");
+    const readout = document.getElementById("readout");
+    const presetRow = document.getElementById("presetRow");
+    const noteGrid = document.getElementById("noteGrid");
+    const canvas = document.getElementById("scope");
+    const canvasContext = canvas.getContext("2d");
+
+    const presets = [
+      ["Fresh Pane", "long clean rings before the first break", { root: 57, ring: 0.88, size: 0.58, strikeRate: 0.26, resonance: 0.82, fracture: 0.2, scatter: 0.22, echo: 0.3, room: 0.72, mode: "crystal" }],
+      ["Green Hairline", "bright glass with a fracture growing underneath", { root: 53, ring: 0.76, size: 0.48, strikeRate: 0.52, resonance: 0.72, fracture: 0.58, scatter: 0.46, echo: 0.42, room: 0.64, mode: "fault" }],
+      ["Pre-Labs Chapel", "large panes, slow bells, deep Atrium air", { root: 48, ring: 0.94, size: 0.82, strikeRate: 0.18, resonance: 0.9, fracture: 0.32, scatter: 0.34, echo: 0.5, room: 0.92, mode: "chapel" }],
+      ["Total Failure", "fast strikes and violent high shard spray", { root: 60, ring: 0.48, size: 0.36, strikeRate: 0.78, resonance: 0.58, fracture: 0.94, scatter: 0.9, echo: 0.6, room: 0.7, mode: "elevator" }]
+    ];
+
+    const notes = [
+      ["C3", 48], ["D3", 50], ["E♭3", 51], ["G3", 55], ["A♭3", 56], ["C4", 60], ["E♭4", 63]
+    ];
+
+    function midiToFrequency(midi) {
+      return 440 * Math.pow(2, (midi - 69) / 12);
+    }
+
+    function seededNoise(seed) {
+      const value = Math.sin(seed * 12.9898 + 78.233) * 43758.5453;
+      return value - Math.floor(value);
+    }
+
+    function makeNoiseBuffer(context, seconds, seed = 1) {
+      const length = Math.max(1, Math.floor(context.sampleRate * seconds));
+      const buffer = context.createBuffer(1, length, context.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let index = 0; index < length; index += 1) {
+        data[index] = seededNoise(seed + index * 0.173) * 2 - 1;
+      }
+      return buffer;
+    }
+
+    function makeImpulse(context, seconds, decay) {
+      const length = Math.floor(context.sampleRate * seconds);
+      const buffer = context.createBuffer(2, length, context.sampleRate);
+      for (let channel = 0; channel < 2; channel += 1) {
+        const data = buffer.getChannelData(channel);
+        for (let index = 0; index < length; index += 1) {
+          const falloff = Math.pow(1 - index / length, decay);
+          data[index] = (seededNoise(index + channel * 811) * 2 - 1) * falloff;
+        }
+      }
+      return buffer;
+    }
+
+    function createEffects(context, destination, settings) {
+      const input = context.createGain();
+      const tone = context.createBiquadFilter();
+      const dry = context.createGain();
+      const delay = context.createDelay(1.4);
+      const feedback = context.createGain();
+      const delayWet = context.createGain();
+      const reverb = context.createConvolver();
+      const reverbWet = context.createGain();
+
+      tone.type = "lowpass";
+      reverb.buffer = makeImpulse(context, 2.8, 2.5);
+      input.connect(tone);
+      tone.connect(dry);
+      dry.connect(destination);
+      tone.connect(delay);
+      delay.connect(feedback);
+      feedback.connect(delay);
+      delay.connect(delayWet);
+      delayWet.connect(destination);
+      tone.connect(reverb);
+      reverb.connect(reverbWet);
+      reverbWet.connect(destination);
+
+      const api = {
+        input,
+        update(next) {
+          const now = context.currentTime;
+          tone.frequency.setTargetAtTime(2800 + next.resonance * 7200, now, 0.03);
+          tone.Q.setTargetAtTime(0.5 + next.resonance * 3.5, now, 0.03);
+          dry.gain.setTargetAtTime(0.72, now, 0.03);
+          delay.delayTime.setTargetAtTime(0.12 + next.echo * 0.68, now, 0.03);
+          feedback.gain.setTargetAtTime(0.08 + next.echo * 0.48, now, 0.03);
+          delayWet.gain.setTargetAtTime(next.echo * 0.42, now, 0.03);
+          reverbWet.gain.setTargetAtTime(0.06 + next.room * 0.72, now, 0.03);
+        }
+      };
+      api.update(settings);
+      return api;
+    }
+
+    function ringGlass(context, destination, when, frequency, velocity, settings, seed) {
+      const group = context.createGain();
+      const panner = context.createStereoPanner();
+      const sizeBend = settings.size * 0.16;
+      const partials = [1, 1.47 + sizeBend, 2.09 + sizeBend * 0.7, 2.91 + sizeBend, 4.18 + sizeBend * 1.4, 5.43 + sizeBend * 1.8];
+      const levels = [0.23, 0.15, 0.105, 0.072, 0.048, 0.032];
+      const baseDuration = 0.65 + settings.ring * 4.9 + settings.resonance * 1.8;
+
+      panner.pan.value = seededNoise(seed + 9) * 1.4 - 0.7;
+      group.gain.value = velocity;
+      group.connect(panner);
+      panner.connect(destination);
+
+      partials.forEach((ratio, index) => {
+        const oscillator = context.createOscillator();
+        const gain = context.createGain();
+        const duration = baseDuration * (1 - index * 0.085);
+        const detune = (seededNoise(seed + index * 3.1) - 0.5) * settings.scatter * 26;
+        oscillator.type = index < 4 ? "sine" : "triangle";
+        oscillator.frequency.value = frequency * ratio;
+        oscillator.detune.value = detune;
+        gain.gain.setValueAtTime(0.0001, when);
+        gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, levels[index]), when + 0.006 + index * 0.001);
+        gain.gain.exponentialRampToValueAtTime(0.0001, when + duration);
+        oscillator.connect(gain);
+        gain.connect(group);
+        oscillator.start(when);
+        oscillator.stop(when + duration + 0.05);
+      });
+
+      const strikeNoise = context.createBufferSource();
+      const strikeFilter = context.createBiquadFilter();
+      const strikeGain = context.createGain();
+      strikeNoise.buffer = makeNoiseBuffer(context, 0.055, seed + 301);
+      strikeFilter.type = "highpass";
+      strikeFilter.frequency.value = 3100 + settings.size * 5600;
+      strikeGain.gain.setValueAtTime(0.0001, when);
+      strikeGain.gain.exponentialRampToValueAtTime(0.055 + velocity * 0.07, when + 0.003);
+      strikeGain.gain.exponentialRampToValueAtTime(0.0001, when + 0.052);
+      strikeNoise.connect(strikeFilter);
+      strikeFilter.connect(strikeGain);
+      strikeGain.connect(group);
+      strikeNoise.start(when);
+      strikeNoise.stop(when + 0.06);
+    }
+
+    function shatterGlass(context, destination, when, settings, seed) {
+      const burst = context.createBufferSource();
+      const highpass = context.createBiquadFilter();
+      const burstGain = context.createGain();
+      const burstPan = context.createStereoPanner();
+      burst.buffer = makeNoiseBuffer(context, 1.2, seed + 707);
+      highpass.type = "highpass";
+      highpass.frequency.value = 1200 + settings.scatter * 4200;
+      highpass.Q.value = 0.7 + settings.resonance * 5;
+      burstGain.gain.setValueAtTime(0.0001, when);
+      burstGain.gain.exponentialRampToValueAtTime(0.32 + settings.scatter * 0.24, when + 0.012);
+      burstGain.gain.exponentialRampToValueAtTime(0.0001, when + 0.95);
+      burstPan.pan.value = seededNoise(seed + 31) * 0.8 - 0.4;
+      burst.connect(highpass);
+      highpass.connect(burstGain);
+      burstGain.connect(burstPan);
+      burstPan.connect(destination);
+      burst.start(when);
+      burst.stop(when + 1.05);
+
+      const shardCount = 10 + Math.round(settings.scatter * 10);
+      for (let index = 0; index < shardCount; index += 1) {
+        const shard = context.createOscillator();
+        const shardGain = context.createGain();
+        const shardPan = context.createStereoPanner();
+        const random = seededNoise(seed + index * 19.7);
+        const start = when + random * 0.24;
+        const duration = 0.12 + seededNoise(seed + index * 7.4) * 0.72;
+        shard.type = index % 3 === 0 ? "square" : "sine";
+        shard.frequency.value = midiToFrequency(settings.root) * (3.2 + random * 12.5);
+        shard.detune.value = (random - 0.5) * 1400 * settings.scatter;
+        shardGain.gain.setValueAtTime(0.0001, start);
+        shardGain.gain.exponentialRampToValueAtTime(0.018 + settings.scatter * 0.038, start + 0.004);
+        shardGain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+        shardPan.pan.value = seededNoise(seed + index * 13.9) * 2 - 1;
+        shard.connect(shardGain);
+        shardGain.connect(shardPan);
+        shardPan.connect(destination);
+        shard.start(start);
+        shard.stop(start + duration + 0.03);
+      }
+    }
+
+    function fractureLimit(settings = params) {
+      return Math.max(2, Math.round(9 - settings.fracture * 7));
+    }
+
+    function updateFractureDisplay() {
+      const ratio = Math.min(1, strikesSinceBreak / fractureLimit());
+      const percent = Math.round(ratio * 100);
+      fractureFill.style.transform = `scaleX(${ratio})`;
+      fractureText.textContent = `${percent}%`;
+    }
+
+    function updateReadout() {
+      const strikesLeft = Math.max(0, fractureLimit() - strikesSinceBreak);
+      readout.textContent = `GLASS STATE\n${lastEvent}\n\nCURRENT FORM\n${params.mode}\n${strikesLeft} strike${strikesLeft === 1 ? "" : "s"} until structural failure\nRing ${Math.round(params.ring * 100)}%\nResonance ${Math.round(params.resonance * 100)}%\nShard scatter ${Math.round(params.scatter * 100)}%\n\nPLAY\nStart the cycle for automatic strikes, or use the pane notes below.`;
+    }
+
+    async function ensureAudio() {
+      if (!audioContext) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        audioContext = new AudioContextClass();
+        master = audioContext.createGain();
+        const compressor = audioContext.createDynamicsCompressor();
+        analyser = audioContext.createAnalyser();
+        analyser.fftSize = 2048;
+        master.gain.value = 0.56;
+        compressor.threshold.value = -15;
+        compressor.knee.value = 12;
+        compressor.ratio.value = 5;
+        compressor.attack.value = 0.003;
+        compressor.release.value = 0.24;
+        master.connect(compressor);
+        compressor.connect(analyser);
+        analyser.connect(audioContext.destination);
+        effects = createEffects(audioContext, master, params);
+      }
+      if (audioContext.state === "suspended") await audioContext.resume();
+      master.gain.cancelScheduledValues(audioContext.currentTime);
+      master.gain.setTargetAtTime(0.56, audioContext.currentTime, 0.025);
+    }
+
+    async function performStrike(midi, fromSequence = false) {
+      await ensureAudio();
+      const now = audioContext.currentTime + 0.015;
+      const seed = shatterCount * 101 + sequenceStep * 17 + strikesSinceBreak * 29 + midi;
+      ringGlass(audioContext, effects.input, now, midiToFrequency(midi), fromSequence ? 0.82 : 1, params, seed);
+      strikesSinceBreak += 1;
+      lastEvent = `pane ${midi} ringing`;
+
+      if (strikesSinceBreak >= fractureLimit()) {
+        shatterGlass(audioContext, effects.input, now + 0.12, params, seed + 401);
+        strikesSinceBreak = 0;
+        shatterCount += 1;
+        document.body.dataset.shatterCount = String(shatterCount);
+        lastEvent = "SHATTER — the Atrium is rebuilding";
+      }
+
+      updateFractureDisplay();
+      updateReadout();
+      if (!animationFrame) drawScope();
+    }
+
+    function scheduleStrike() {
+      if (!playing) return;
+      const sequence = modeSequences[params.mode];
+      const midi = params.root + sequence[sequenceStep % sequence.length];
+      performStrike(midi, true);
+      sequenceStep = (sequenceStep + 1) % sequence.length;
+      const interval = 980 - params.strikeRate * 690;
+      sequenceTimer = window.setTimeout(scheduleStrike, interval);
+    }
+
+    async function startCycle() {
+      await ensureAudio();
+      playing = true;
+      playButton.textContent = "Stop Glass Cycle";
+      playButton.classList.add("is-playing");
+      window.clearTimeout(sequenceTimer);
+      scheduleStrike();
+    }
+
+    function stopCycle() {
+      playing = false;
+      window.clearTimeout(sequenceTimer);
+      window.cancelAnimationFrame(animationFrame);
+      animationFrame = 0;
+      playButton.textContent = "Start Glass Cycle";
+      playButton.classList.remove("is-playing");
+      lastEvent = "cycle stopped — panes still settling";
+      updateReadout();
+      if (master && audioContext) master.gain.setTargetAtTime(0.0001, audioContext.currentTime, 0.08);
+    }
+
+    function drawScope() {
+      if (!analyser) {
+        animationFrame = 0;
+        return;
+      }
+      const data = new Uint8Array(analyser.frequencyBinCount);
+      analyser.getByteTimeDomainData(data);
+      canvasContext.fillStyle = "#010403";
+      canvasContext.fillRect(0, 0, canvas.width, canvas.height);
+      canvasContext.strokeStyle = "rgba(69,255,197,.82)";
+      canvasContext.lineWidth = 2;
+      canvasContext.beginPath();
+      data.forEach((value, index) => {
+        const x = index / (data.length - 1) * canvas.width;
+        const y = value / 255 * canvas.height;
+        if (index === 0) canvasContext.moveTo(x, y);
+        else canvasContext.lineTo(x, y);
+      });
+      canvasContext.stroke();
+      if (playing) animationFrame = window.requestAnimationFrame(drawScope);
+      else animationFrame = 0;
+    }
+
+    function applyParams() {
+      document.querySelectorAll("#controls input, #controls select").forEach(element => {
+        element.value = params[element.id];
+      });
+      document.querySelectorAll("[data-value]").forEach(element => {
+        const key = element.dataset.value;
+        element.textContent = key === "root" ? params[key] : `${Math.round(params[key] * 100)}%`;
+      });
+      if (effects) effects.update(params);
+      updateFractureDisplay();
+      updateReadout();
+    }
+
+    function setParams(next) {
+      params = { ...params, ...next };
+      applyParams();
+    }
+
+    function renderControls() {
+      controlSpec.forEach(([key, label, min, max, step]) => {
+        controls.insertAdjacentHTML("beforeend", `<div class="control"><label for="${key}">${label}<span data-value="${key}"></span></label><input id="${key}" type="range" min="${min}" max="${max}" step="${step}" /></div>`);
+      });
+      controls.insertAdjacentHTML("beforeend", `<div class="control"><label for="mode">Ring pattern</label><select id="mode">${modes.map(mode => `<option value="${mode}">${mode}</option>`).join("")}</select></div>`);
+      controls.querySelectorAll("input, select").forEach(element => {
+        element.addEventListener("input", () => {
+          params[element.id] = element.type === "range" ? Number(element.value) : element.value;
+          applyParams();
+        });
+      });
+    }
+
+    function renderPresets() {
+      presets.forEach(([name, description, preset]) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "preset";
+        button.innerHTML = `<strong>${name}</strong><span>${description}</span>`;
+        button.addEventListener("click", () => {
+          strikesSinceBreak = 0;
+          lastEvent = `${name} loaded`;
+          setParams(preset);
+        });
+        presetRow.appendChild(button);
+      });
+    }
+
+    function renderNotes() {
+      notes.forEach(([name, midi]) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "note";
+        button.textContent = name;
+        button.setAttribute("aria-label", `Strike glass note ${name}`);
+        button.addEventListener("click", () => performStrike(midi));
+        noteGrid.appendChild(button);
+      });
+    }
+
+    function renderOfflineExport() {
+      const sampleRate = audioContext?.sampleRate || 48000;
+      const duration = 8;
+      const offline = new OfflineAudioContext(2, sampleRate * duration, sampleRate);
+      const offlineMaster = offline.createGain();
+      const compressor = offline.createDynamicsCompressor();
+      const snapshot = { ...params };
+      const offlineEffects = createEffects(offline, offlineMaster, snapshot);
+      offlineMaster.gain.value = 0.56;
+      compressor.threshold.value = -15;
+      compressor.ratio.value = 5;
+      offlineMaster.connect(compressor);
+      compressor.connect(offline.destination);
+
+      const sequence = modeSequences[snapshot.mode];
+      const interval = (980 - snapshot.strikeRate * 690) / 1000;
+      const limit = fractureLimit(snapshot);
+      let strikeCount = 0;
+      let step = 0;
+      let time = 0.08;
+      let shattered = false;
+
+      while (time < duration - 0.7) {
+        const midi = snapshot.root + sequence[step % sequence.length];
+        const seed = 900 + step * 47;
+        ringGlass(offline, offlineEffects.input, time, midiToFrequency(midi), 0.86, snapshot, seed);
+        strikeCount += 1;
+        if (strikeCount >= limit) {
+          shatterGlass(offline, offlineEffects.input, time + 0.12, snapshot, seed + 401);
+          strikeCount = 0;
+          shattered = true;
+        }
+        step += 1;
+        time += interval;
+      }
+
+      if (!shattered) shatterGlass(offline, offlineEffects.input, duration - 1.25, snapshot, 4401);
+      return offline.startRendering();
+    }
+
+    function audioBufferToWav(buffer) {
+      const byteLength = buffer.length * buffer.numberOfChannels * 2 + 44;
+      const view = new DataView(new ArrayBuffer(byteLength));
+      const write = (offset, text) => [...text].forEach((character, index) => view.setUint8(offset + index, character.charCodeAt(0)));
+      write(0, "RIFF");
+      view.setUint32(4, byteLength - 8, true);
+      write(8, "WAVE");
+      write(12, "fmt ");
+      view.setUint32(16, 16, true);
+      view.setUint16(20, 1, true);
+      view.setUint16(22, buffer.numberOfChannels, true);
+      view.setUint32(24, buffer.sampleRate, true);
+      view.setUint32(28, buffer.sampleRate * buffer.numberOfChannels * 2, true);
+      view.setUint16(32, buffer.numberOfChannels * 2, true);
+      view.setUint16(34, 16, true);
+      write(36, "data");
+      view.setUint32(40, byteLength - 44, true);
+      let offset = 44;
+      for (let index = 0; index < buffer.length; index += 1) {
+        for (let channel = 0; channel < buffer.numberOfChannels; channel += 1) {
+          const sample = Math.max(-1, Math.min(1, buffer.getChannelData(channel)[index]));
+          view.setInt16(offset, sample < 0 ? sample * 32768 : sample * 32767, true);
+          offset += 2;
+        }
+      }
+      return new Blob([view], { type: "audio/wav" });
+    }
+
+    async function exportWav() {
+      exportButton.disabled = true;
+      exportButton.textContent = "Rendering…";
+      try {
+        const rendered = await renderOfflineExport();
+        const url = URL.createObjectURL(audioBufferToWav(rendered));
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = `atrium-glass-shatter-${Date.now()}.wav`;
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        window.setTimeout(() => URL.revokeObjectURL(url), 1200);
+      } finally {
+        exportButton.disabled = false;
+        exportButton.textContent = "Export .wav";
+      }
+    }
+
+    playButton.addEventListener("click", () => playing ? stopCycle() : startCycle());
+    strikeButton.addEventListener("click", () => performStrike(params.root + modeSequences[params.mode][sequenceStep % 8]));
+    randomButton.addEventListener("click", () => {
+      strikesSinceBreak = 0;
+      lastEvent = "new pane geometry loaded";
+      setParams({
+        root: 47 + Math.floor(Math.random() * 18),
+        ring: 0.4 + Math.random() * 0.6,
+        size: Math.random(),
+        strikeRate: 0.12 + Math.random() * 0.78,
+        resonance: 0.4 + Math.random() * 0.6,
+        fracture: 0.18 + Math.random() * 0.8,
+        scatter: 0.15 + Math.random() * 0.85,
+        echo: Math.random() * 0.72,
+        room: 0.35 + Math.random() * 0.65,
+        mode: modes[Math.floor(Math.random() * modes.length)]
+      });
+    });
+    exportButton.addEventListener("click", exportWav);
+
+    renderControls();
+    renderPresets();
+    renderNotes();
+    applyParams();
+    canvasContext.fillStyle = "#010403";
+    canvasContext.fillRect(0, 0, canvas.width, canvas.height);
+    canvasContext.strokeStyle = "rgba(69,255,197,.32)";
+    canvasContext.beginPath();
+    canvasContext.moveTo(0, canvas.height / 2);
+    canvasContext.lineTo(canvas.width, canvas.height / 2);
+    canvasContext.stroke();
   </script>
 </body>
 </html>
