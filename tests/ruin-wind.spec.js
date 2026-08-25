@@ -33,7 +33,8 @@ test.describe("Ruin Wind", () => {
     await expect(page).toHaveTitle(/Ruin Wind/);
     await expect(page.locator("h1")).toHaveText("Ruin Wind");
     await expect(page.locator(".scene-button")).toHaveCount(4);
-    await expect(page.locator("input[type='range']")).toHaveCount(7);
+    await expect(page.locator("input[type='range']")).toHaveCount(6);
+    await expect(page.locator(".control-bank")).not.toContainText("Matter");
     await expect(page.locator("#windTrace")).toBeVisible();
 
     await page.locator('[data-scene="2"]').click();
@@ -60,6 +61,15 @@ test.describe("Ruin Wind", () => {
     await page.locator("#playButton").click();
     await expect(page.locator("body")).toHaveAttribute("data-audio", "paused");
     expect(errors).toEqual([]);
+  });
+
+  test("removed matter engine stays absent from the interface and worklet", async ({ page, request }) => {
+    await page.goto("/ruin-wind/");
+    await expect(page.locator("#debris")).toHaveCount(0);
+
+    const worklet = await request.get("/ruin-wind/wind-worklet.js");
+    expect(worklet.ok()).toBeTruthy();
+    expect(await worklet.text()).not.toMatch(/\b(?:debris|impact)\b/i);
   });
 
   test("mobile layout stays inside the viewport with touch-sized controls", async ({ page }) => {
