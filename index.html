@@ -101,6 +101,7 @@
         .album-cover-container {
     margin-top: 30px;
     margin-bottom: 20px;
+    position: relative;
 }
 
 
@@ -109,6 +110,34 @@
             height: auto;
             border-radius: 12px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .secret-signal-link {
+            position: absolute;
+            right: 5px;
+            bottom: 7px;
+            z-index: 2;
+            display: grid;
+            width: 30px;
+            height: 30px;
+            place-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.12);
+            color: rgba(255, 255, 255, 0.22);
+            font: 11px/1 Georgia, serif;
+            text-decoration: none;
+            opacity: 0.7;
+            transition: opacity 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .secret-signal-link:hover,
+        .secret-signal-link:focus-visible {
+            color: rgba(255, 255, 255, 0.72);
+            border-color: rgba(255, 255, 255, 0.28);
+            opacity: 1;
+            outline: none;
         }
 
         .gallery-modal .back-button {
@@ -345,6 +374,7 @@
         <button class="back-button" onclick="closeAlbumPage('album4')">Back</button>
         <div class="album-cover-container">
             <img src="album4-cover.jpg" alt="The Atrium Cover" class="album-cover">
+            <a class="secret-signal-link" href="atrium-synth.html" aria-label="Open the Atrium sound instrument" title="A faint Atrium signal">∴</a>
         </div>
     </div>
     <div id="album5" class="album-page">
@@ -354,6 +384,7 @@
         <button class="back-button" onclick="closeAlbumPage('album5')">Back</button>
         <div class="album-cover-container">
             <img src="album5-cover.jpg" alt="Forgotten Oil Rigs 2 Cover" class="album-cover">
+            <a class="secret-signal-link" href="forgotten-oil-rigs-2-synth.html" aria-label="Open the Eternal Sands sound instrument" title="A signal under the sand">⌁</a>
         </div>
     </div>
 
