@@ -35,6 +35,8 @@ test.describe("Ruin Wind", () => {
     await expect(page.locator(".scene-button")).toHaveCount(4);
     await expect(page.locator("input[type='range']")).toHaveCount(7);
     await expect(page.locator("#howl")).toBeVisible();
+    await expect(page.locator("#howl")).toHaveValue("0.68");
+    await expect(page.locator("output[for='howl']")).toHaveText("68");
     await expect(page.locator("label[for='howl']")).toContainText("Howl");
     await expect(page.locator(".control-bank")).not.toContainText("Matter");
     await expect(page.locator("#windTrace")).toBeVisible();
@@ -74,13 +76,16 @@ test.describe("Ruin Wind", () => {
     expect(await worklet.text()).not.toMatch(/\b(?:debris|impact)\b/i);
   });
 
-  test("howl uses a gust-shaped resonant wind path", async ({ request }) => {
+  test("howl uses an assertive gust-shaped resonant wind path", async ({ request }) => {
     const worklet = await request.get("/ruin-wind/wind-worklet.js");
     expect(worklet.ok()).toBeTruthy();
     const source = await worklet.text();
     expect(source).toContain("howlEnvelope");
     expect(source).toContain("howlFrequencyA");
     expect(source).toContain("howlDelay");
+    expect(source).toContain("const howlAmount = p.howl;");
+    expect(source).toContain("this.howlSceneLevel * 3");
+    expect(source).toContain("howlReflection * 0.34");
   });
 
   test("mobile layout stays inside the viewport with touch-sized controls", async ({ page }) => {
