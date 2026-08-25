@@ -6,7 +6,7 @@ const INTERVALS_B = new Float32Array([2.25, 2.9966, 1.4983, 1.4142]);
 class RuinWindProcessor extends AudioWorkletProcessor {
   constructor() {
     super();
-    this.targets = { force: 0.62, gust: 0.76, tone: 0.27, debris: 0.39, pulse: 0.36, space: 0.58, omen: 0.5 };
+    this.targets = { force: 0.62, gust: 0.76, tone: 0.18, pulse: 0.36, space: 0.58, omen: 0.28 };
     this.values = { ...this.targets };
     this.scene = 0;
     this.seed = 0x57314e44;
@@ -17,7 +17,7 @@ class RuinWindProcessor extends AudioWorkletProcessor {
     this.wavePhase = 0;
     this.whistlePhaseA = 0;
     this.whistlePhaseB = 0;
-    this.debrisPhase = 0;
+    this.presencePhase = 0;
     this.rootBase = SCENE_ROOTS[0];
     this.intervalA = INTERVALS_A[0];
     this.intervalB = INTERVALS_B[0];
@@ -28,8 +28,9 @@ class RuinWindProcessor extends AudioWorkletProcessor {
     this.lowR = 0;
     this.airL = 0;
     this.airR = 0;
-    this.debrisEnvelope = 0;
-    this.debrisPan = 0;
+    this.voiceEnvelope = 0;
+    this.voiceAttack = 1 - Math.exp(-1 / (sampleRate * 0.12));
+    this.voiceRelease = 1 - Math.exp(-1 / (sampleRate * 0.7));
     this.surge = 0;
     this.surgeRise = 0;
     this.dcInL = 0;
@@ -78,7 +79,6 @@ class RuinWindProcessor extends AudioWorkletProcessor {
       this.values.force += (this.targets.force - this.values.force) * 0.0007;
       this.values.gust += (this.targets.gust - this.values.gust) * 0.0007;
       this.values.tone += (this.targets.tone - this.values.tone) * 0.0007;
-      this.values.debris += (this.targets.debris - this.values.debris) * 0.0007;
       this.values.pulse += (this.targets.pulse - this.values.pulse) * 0.0007;
       this.values.space += (this.targets.space - this.values.space) * 0.0007;
       this.values.omen += (this.targets.omen - this.values.omen) * 0.0007;
@@ -123,28 +123,30 @@ class RuinWindProcessor extends AudioWorkletProcessor {
       const highL = whiteL - this.airL;
       const highR = whiteR - this.airR;
 
-      const root = this.rootBase * (0.65 + p.tone * 3.8);
-      const whistleDrift = 1 + breath * (0.004 + p.gust * 0.017);
+      const root = this.rootBase * (4.5 + p.tone * 8.5);
+      const whistleDrift = 1 + breath * (0.0015 + p.gust * 0.0045) + Math.sin(this.gustPhase * 0.173) * 0.0018;
       this.whistlePhaseA += TAU * root * this.intervalA * whistleDrift / sampleRate;
       this.whistlePhaseB += TAU * root * this.intervalB / whistleDrift / sampleRate;
       if (this.whistlePhaseA > TAU) this.whistlePhaseA -= TAU;
       if (this.whistlePhaseB > TAU) this.whistlePhaseB -= TAU;
-      const voice = Math.sin(this.whistlePhaseA) * 0.7 + Math.sin(this.whistlePhaseB + Math.sin(this.gustPhase) * 0.35) * 0.3;
-      const voiceGain = (0.003 + p.tone * p.tone * 0.055) * (0.35 + gust * 0.8) * (1 - p.debris * 0.42);
+      const voiceThreshold = 0.14 + (1 - p.gust) * 0.12;
+      const crest = Math.min(1, Math.max(0, (breath - voiceThreshold) * 1.55));
+      const voiceTarget = crest * crest * (3 - 2 * crest);
+      const voiceSlew = voiceTarget > this.voiceEnvelope ? this.voiceAttack : this.voiceRelease;
+      this.voiceEnvelope += (voiceTarget - this.voiceEnvelope) * voiceSlew;
+      const voiceAmount = p.tone * (0.35 + 0.65 * p.tone);
+      const voiceGain = voiceAmount * (0.01 + p.force * 0.014) * this.voiceEnvelope;
+      const voiceA = Math.sin(this.whistlePhaseA) + Math.sin(this.whistlePhaseA * 2 + 0.3) * 0.14;
+      const voiceB = Math.sin(this.whistlePhaseB);
+      const voiceL = voiceA * 0.58 + voiceB * 0.26 + highL * 0.08;
+      const voiceR = voiceB * 0.58 + voiceA * 0.26 + highR * 0.08;
 
-      const debrisChance = p.debris * p.debris * (0.000018 + p.force * 0.00009) * (0.4 + rhythmic);
-      if (this.random() > 1 - debrisChance) {
-        this.debrisEnvelope = 0.2 + Math.abs(this.random()) * 0.8;
-        this.debrisPan = this.random();
-        this.debrisPhase = 0;
-      }
-      const debrisFrequency = 360 + p.tone * 1850 + Math.abs(this.debrisPan) * 900;
-      this.debrisPhase += TAU * debrisFrequency / sampleRate;
-      const impact = (Math.sin(this.debrisPhase) * 0.68 + this.random() * 0.32) * this.debrisEnvelope * p.debris;
-      this.debrisEnvelope *= 0.994 - p.space * 0.0015;
-
-      const deathCall = Math.sin(this.whistlePhaseA * 0.247 + Math.sin(this.gustPhase * 0.23)) * p.omen * p.omen * 0.035;
-      const gaiaBreath = Math.sin(this.gustPhase * 0.5) * (1 - p.omen) * 0.025;
+      const presenceFrequency = this.rootBase * (5.2 + p.omen * 3.5);
+      this.presencePhase += TAU * presenceFrequency * (1 + breath * 0.002) / sampleRate;
+      if (this.presencePhase > TAU) this.presencePhase -= TAU;
+      const distantCall = Math.sin(this.presencePhase + Math.sin(this.gustPhase * 0.23) * 0.18) * p.omen * p.omen * p.omen * this.voiceEnvelope * this.voiceEnvelope * 0.009;
+      const gaiaBreathL = pinkL * (1 - p.omen) * gust * 0.025;
+      const gaiaBreathR = pinkR * (1 - p.omen) * gust * 0.025;
       const baseGain = (0.055 + p.force * 0.3) * gust * rhythmic;
       this.wavePhase += TAU * (31 + p.gust * 17) / sampleRate;
       if (this.wavePhase > TAU) this.wavePhase -= TAU;
@@ -154,9 +156,9 @@ class RuinWindProcessor extends AudioWorkletProcessor {
 
       this.panPhase += TAU * (0.018 + p.space * 0.045) / sampleRate;
       const pan = Math.sin(this.panPhase) * p.space * 0.38;
-      const common = voice * voiceGain + deathCall + gaiaBreath + wave * (this.scene === 2 ? 0.5 : 0.18);
-      const dryL = bodyL + common * (1 - pan) + impact * (0.5 - this.debrisPan * 0.38);
-      const dryR = bodyR + common * (1 + pan) + impact * (0.5 + this.debrisPan * 0.38);
+      const common = distantCall + wave * (this.scene === 2 ? 0.5 : 0.18);
+      const dryL = bodyL + gaiaBreathL + voiceL * voiceGain * (1 - pan) + common * (1 - pan);
+      const dryR = bodyR + gaiaBreathR + voiceR * voiceGain * (1 + pan) + common * (1 + pan);
 
       const saturatedL = Math.tanh(dryL * 1.42);
       const saturatedR = Math.tanh(dryR * 1.42);
