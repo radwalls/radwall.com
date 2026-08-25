@@ -8,7 +8,7 @@
       place: "THE RIGS STILL REIGN",
       note: "Hot pressure drags through derricks, pipework and oxidized wire.",
       color: "#c66b36",
-      params: { force: 0.62, gust: 0.76, tone: 0.18, pulse: 0.36, space: 0.58, omen: 0.28 }
+      params: { force: 0.62, gust: 0.76, tone: 0.18, howl: 0.55, pulse: 0.36, space: 0.58, omen: 0.28 }
     },
     {
       number: "II",
@@ -16,7 +16,7 @@
       place: "THE SECRET BALCONY",
       note: "The first unsealed air in years circles a structure larger than sight.",
       color: "#a7b6ae",
-      params: { force: 0.48, gust: 0.46, tone: 0.42, pulse: 0.24, space: 0.91, omen: 0.16 }
+      params: { force: 0.48, gust: 0.46, tone: 0.42, howl: 0.24, pulse: 0.24, space: 0.91, omen: 0.16 }
     },
     {
       number: "III",
@@ -24,7 +24,7 @@
       place: "PLANETARY ALIGNMENT",
       note: "A thousand-foot wall gathers beyond the escape line, then arrives.",
       color: "#d3564d",
-      params: { force: 0.86, gust: 0.9, tone: 0.22, pulse: 0.17, space: 0.82, omen: 0.42 }
+      params: { force: 0.86, gust: 0.9, tone: 0.22, howl: 0.08, pulse: 0.17, space: 0.82, omen: 0.42 }
     },
     {
       number: "IV",
@@ -32,7 +32,7 @@
       place: "THOUSANDS OF YEARS LATER",
       note: "Shrapnel, stone and the rubble of nations keep their own weather.",
       color: "#8c8a83",
-      params: { force: 0.45, gust: 0.65, tone: 0.12, pulse: 0.44, space: 0.74, omen: 0.55 }
+      params: { force: 0.45, gust: 0.65, tone: 0.12, howl: 0.34, pulse: 0.44, space: 0.74, omen: 0.55 }
     }
   ];
 

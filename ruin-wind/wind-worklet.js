@@ -2,11 +2,19 @@ const TAU = Math.PI * 2;
 const SCENE_ROOTS = new Float32Array([55, 73.42, 46.25, 41.2]);
 const INTERVALS_A = new Float32Array([1.5, 2, 1.3348, 1.1892]);
 const INTERVALS_B = new Float32Array([2.25, 2.9966, 1.4983, 1.4142]);
+const HOWL_FREQUENCIES_A = new Float32Array([420, 285, 170, 220]);
+const HOWL_FREQUENCIES_B = new Float32Array([1080, 520, 320, 390]);
+const HOWL_Q_A = new Float32Array([18, 7.5, 4, 5.5]);
+const HOWL_Q_B = new Float32Array([23, 9, 5, 7]);
+const HOWL_MIX_B = new Float32Array([0.56, 0.36, 0.3, 0.34]);
+const HOWL_WIDTH = new Float32Array([0.12, 0.34, 0.48, 0.42]);
+const HOWL_LEVEL = new Float32Array([1, 0.82, 0.64, 0.74]);
+const HOWL_DELAY_SECONDS = new Float32Array([0.043, 0.11, 0.155, 0.088]);
 
 class RuinWindProcessor extends AudioWorkletProcessor {
   constructor() {
     super();
-    this.targets = { force: 0.62, gust: 0.76, tone: 0.18, pulse: 0.36, space: 0.58, omen: 0.28 };
+    this.targets = { force: 0.62, gust: 0.76, tone: 0.18, howl: 0.55, pulse: 0.36, space: 0.58, omen: 0.28 };
     this.values = { ...this.targets };
     this.scene = 0;
     this.seed = 0x57314e44;
@@ -31,6 +39,36 @@ class RuinWindProcessor extends AudioWorkletProcessor {
     this.voiceEnvelope = 0;
     this.voiceAttack = 1 - Math.exp(-1 / (sampleRate * 0.12));
     this.voiceRelease = 1 - Math.exp(-1 / (sampleRate * 0.7));
+    this.howlEnvelope = 0;
+    this.howlAttack = 1 - Math.exp(-1 / (sampleRate * 0.18));
+    this.howlRelease = 1 - Math.exp(-1 / (sampleRate * 1.25));
+    this.howlDrift = 0;
+    this.howlDriftCoefficient = 1 - Math.exp(-1 / (sampleRate * 0.08));
+    this.howlSceneSlew = 1 - Math.exp(-32 / (sampleRate * 0.09));
+    this.howlBase = HOWL_FREQUENCIES_A[0];
+    this.howlRatio = HOWL_FREQUENCIES_B[0] / HOWL_FREQUENCIES_A[0];
+    this.howlQ1 = HOWL_Q_A[0];
+    this.howlQ2 = HOWL_Q_B[0];
+    this.howlMixB = HOWL_MIX_B[0];
+    this.howlWidth = HOWL_WIDTH[0];
+    this.howlSceneLevel = HOWL_LEVEL[0];
+    this.howlFrequencyA = HOWL_FREQUENCIES_A[0];
+    this.howlFrequencyB = HOWL_FREQUENCIES_B[0];
+    this.howlFilterA1 = 1;
+    this.howlFilterA2 = 0;
+    this.howlFilterA3 = 0;
+    this.howlFilterB1 = 1;
+    this.howlFilterB2 = 0;
+    this.howlFilterB3 = 0;
+    this.howlNormA = 1;
+    this.howlNormB = 1;
+    this.howlIc1A = 0;
+    this.howlIc2A = 0;
+    this.howlIc1B = 0;
+    this.howlIc2B = 0;
+    this.howlDelay = new Float32Array(Math.max(2048, Math.ceil(sampleRate * 0.22)));
+    this.howlDelayIndex = 0;
+    this.howlDelaySamples = Math.min(this.howlDelay.length - 2, sampleRate * HOWL_DELAY_SECONDS[0]);
     this.surge = 0;
     this.surgeRise = 0;
     this.dcInL = 0;
@@ -79,6 +117,7 @@ class RuinWindProcessor extends AudioWorkletProcessor {
       this.values.force += (this.targets.force - this.values.force) * 0.0007;
       this.values.gust += (this.targets.gust - this.values.gust) * 0.0007;
       this.values.tone += (this.targets.tone - this.values.tone) * 0.0007;
+      this.values.howl += (this.targets.howl - this.values.howl) * 0.0007;
       this.values.pulse += (this.targets.pulse - this.values.pulse) * 0.0007;
       this.values.space += (this.targets.space - this.values.space) * 0.0007;
       this.values.omen += (this.targets.omen - this.values.omen) * 0.0007;
@@ -95,6 +134,41 @@ class RuinWindProcessor extends AudioWorkletProcessor {
       this.gustPhase += TAU * gustRate / sampleRate;
       const breath = Math.sin(this.gustPhase) * 0.42 + Math.sin(this.gustPhase * 0.371 + 1.8) * 0.23 + this.brown * 0.35;
       const gust = Math.max(0.06, 0.55 + breath * (0.18 + p.gust * 0.62));
+      this.howlDrift += (breath - this.howlDrift) * this.howlDriftCoefficient;
+      const howlThreshold = 0.12 + (1 - p.gust) * 0.18;
+      let howlCrest = Math.min(1, Math.max(0, (this.howlDrift - howlThreshold) * 1.5));
+      howlCrest = howlCrest * howlCrest * (3 - 2 * howlCrest);
+      const howlTarget = howlCrest * (0.25 + p.gust * 0.75);
+      const howlSlew = howlTarget > this.howlEnvelope ? this.howlAttack : this.howlRelease;
+      this.howlEnvelope += (howlTarget - this.howlEnvelope) * howlSlew;
+
+      if ((this.sample & 31) === 0) {
+        this.howlBase += (HOWL_FREQUENCIES_A[this.scene] - this.howlBase) * this.howlSceneSlew;
+        this.howlRatio += (HOWL_FREQUENCIES_B[this.scene] / HOWL_FREQUENCIES_A[this.scene] - this.howlRatio) * this.howlSceneSlew;
+        this.howlQ1 += (HOWL_Q_A[this.scene] - this.howlQ1) * this.howlSceneSlew;
+        this.howlQ2 += (HOWL_Q_B[this.scene] - this.howlQ2) * this.howlSceneSlew;
+        this.howlMixB += (HOWL_MIX_B[this.scene] - this.howlMixB) * this.howlSceneSlew;
+        this.howlWidth += (HOWL_WIDTH[this.scene] - this.howlWidth) * this.howlSceneSlew;
+        this.howlSceneLevel += (HOWL_LEVEL[this.scene] - this.howlSceneLevel) * this.howlSceneSlew;
+
+        const bend = 0.94 + this.howlEnvelope * 0.08 + this.howlDrift * 0.012;
+        const maximumHowlFrequency = Math.min(3200, sampleRate * 0.18);
+        this.howlFrequencyA = Math.max(90, Math.min(maximumHowlFrequency, this.howlBase * bend));
+        this.howlFrequencyB = Math.max(120, Math.min(maximumHowlFrequency, this.howlFrequencyA * this.howlRatio * (1 - this.howlDrift * 0.006)));
+        const qAmount = 0.72 + p.howl * 0.28;
+        const kA = 1 / Math.min(24, Math.max(0.65, this.howlQ1 * qAmount));
+        const kB = 1 / Math.min(24, Math.max(0.65, this.howlQ2 * qAmount));
+        const gA = Math.tan(Math.PI * this.howlFrequencyA / sampleRate);
+        const gB = Math.tan(Math.PI * this.howlFrequencyB / sampleRate);
+        this.howlFilterA1 = 1 / (1 + gA * (gA + kA));
+        this.howlFilterA2 = gA * this.howlFilterA1;
+        this.howlFilterA3 = gA * this.howlFilterA2;
+        this.howlFilterB1 = 1 / (1 + gB * (gB + kB));
+        this.howlFilterB2 = gB * this.howlFilterB1;
+        this.howlFilterB3 = gB * this.howlFilterB2;
+        this.howlNormA = kA;
+        this.howlNormB = kB;
+      }
 
       const pulseRate = 0.09 + p.pulse * p.pulse * 3.8;
       this.pulsePhase += TAU * pulseRate / sampleRate;
@@ -141,6 +215,40 @@ class RuinWindProcessor extends AudioWorkletProcessor {
       const voiceL = voiceA * 0.58 + voiceB * 0.26 + highL * 0.08;
       const voiceR = voiceB * 0.58 + voiceA * 0.26 + highR * 0.08;
 
+      const howlExciter = ((pinkL + pinkR) * 0.38 + (whiteL + whiteR) * 0.055) * (0.65 + Math.min(1, gust) * 0.35);
+      const howlV3A = howlExciter - this.howlIc2A;
+      const howlBandA = this.howlFilterA1 * this.howlIc1A + this.howlFilterA2 * howlV3A;
+      const howlLowA = this.howlIc2A + this.howlFilterA2 * this.howlIc1A + this.howlFilterA3 * howlV3A;
+      this.howlIc1A = 2 * howlBandA - this.howlIc1A;
+      this.howlIc2A = 2 * howlLowA - this.howlIc2A;
+      const howlV3B = howlExciter - this.howlIc2B;
+      const howlBandB = this.howlFilterB1 * this.howlIc1B + this.howlFilterB2 * howlV3B;
+      const howlLowB = this.howlIc2B + this.howlFilterB2 * this.howlIc1B + this.howlFilterB3 * howlV3B;
+      this.howlIc1B = 2 * howlBandB - this.howlIc1B;
+      this.howlIc2B = 2 * howlLowB - this.howlIc2B;
+      const howlModeA = howlBandA * this.howlNormA;
+      const howlModeB = howlBandB * this.howlNormB;
+      const howlCenter = howlModeA * 0.82 + howlModeB * this.howlMixB;
+      const howlSide = (howlModeA * 0.11 - howlModeB * 0.08) * this.howlWidth * (0.65 + p.space * 0.5);
+
+      const targetDelaySamples = Math.min(this.howlDelay.length - 2, sampleRate * HOWL_DELAY_SECONDS[this.scene] * (0.72 + p.space * 0.5));
+      this.howlDelaySamples += (targetDelaySamples - this.howlDelaySamples) * 0.00002;
+      let howlReadPosition = this.howlDelayIndex - this.howlDelaySamples;
+      if (howlReadPosition < 0) howlReadPosition += this.howlDelay.length;
+      const howlReadIndex = Math.floor(howlReadPosition);
+      const howlReadNext = howlReadIndex + 1 === this.howlDelay.length ? 0 : howlReadIndex + 1;
+      const howlReadFraction = howlReadPosition - howlReadIndex;
+      const howlReflection = this.howlDelay[howlReadIndex] * (1 - howlReadFraction) + this.howlDelay[howlReadNext] * howlReadFraction;
+      this.howlDelay[this.howlDelayIndex] = howlCenter;
+      this.howlDelayIndex += 1;
+      if (this.howlDelayIndex === this.howlDelay.length) this.howlDelayIndex = 0;
+
+      const howlAmount = p.howl * p.howl * (3 - 2 * p.howl);
+      const howlGain = this.targets.howl === 0 ? 0 : howlAmount * this.howlEnvelope * (0.36 + p.force * 0.34) * this.howlSceneLevel;
+      const howlPan = Math.sin(this.panPhase + 1.8) * (0.08 + p.space * 0.12);
+      const howlL = ((howlCenter + howlSide) * (1 - howlPan) + howlReflection * 0.24 * (1 + howlPan)) * howlGain;
+      const howlR = ((howlCenter - howlSide) * (1 + howlPan) + howlReflection * 0.24 * (1 - howlPan)) * howlGain;
+
       const presenceFrequency = this.rootBase * (5.2 + p.omen * 3.5);
       this.presencePhase += TAU * presenceFrequency * (1 + breath * 0.002) / sampleRate;
       if (this.presencePhase > TAU) this.presencePhase -= TAU;
@@ -157,8 +265,8 @@ class RuinWindProcessor extends AudioWorkletProcessor {
       this.panPhase += TAU * (0.018 + p.space * 0.045) / sampleRate;
       const pan = Math.sin(this.panPhase) * p.space * 0.38;
       const common = distantCall + wave * (this.scene === 2 ? 0.5 : 0.18);
-      const dryL = bodyL + gaiaBreathL + voiceL * voiceGain * (1 - pan) + common * (1 - pan);
-      const dryR = bodyR + gaiaBreathR + voiceR * voiceGain * (1 + pan) + common * (1 + pan);
+      const dryL = bodyL + gaiaBreathL + voiceL * voiceGain * (1 - pan) + howlL + common * (1 - pan);
+      const dryR = bodyR + gaiaBreathR + voiceR * voiceGain * (1 + pan) + howlR + common * (1 + pan);
 
       const saturatedL = Math.tanh(dryL * 1.42);
       const saturatedR = Math.tanh(dryR * 1.42);
