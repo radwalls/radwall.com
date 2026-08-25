@@ -220,7 +220,7 @@
 
     initializing = (async () => {
       await resumePromise;
-      await openingContext.audioWorklet.addModule("wind-worklet.js");
+      await openingContext.audioWorklet.addModule("wind-worklet.js?v=1.0.3");
 
       windNode = new AudioWorkletNode(openingContext, "ruin-wind-processor", {
         numberOfInputs: 0,

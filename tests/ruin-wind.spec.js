@@ -77,8 +77,14 @@ test.describe("Ruin Wind", () => {
   });
 
   test("howl uses an assertive gust-shaped resonant wind path", async ({ request }) => {
+    const document = await request.get("/ruin-wind/");
+    const controller = await request.get("/ruin-wind/wind.js");
     const worklet = await request.get("/ruin-wind/wind-worklet.js");
+    expect(document.ok()).toBeTruthy();
+    expect(controller.ok()).toBeTruthy();
     expect(worklet.ok()).toBeTruthy();
+    expect(await document.text()).toContain('src="wind.js?v=1.0.3"');
+    expect(await controller.text()).toContain('addModule("wind-worklet.js?v=1.0.3")');
     const source = await worklet.text();
     expect(source).toContain("howlEnvelope");
     expect(source).toContain("howlFrequencyA");
