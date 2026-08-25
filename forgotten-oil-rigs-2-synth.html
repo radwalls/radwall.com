@@ -3,31 +3,973 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Forgotten Oil Rigs 2 Wind Synth</title>
+  <title>Forgotten Oil Rigs 2 Thunder Arp</title>
   <style>
-    :root{--panel:rgba(38,29,18,.9);--panel2:rgba(58,42,24,.92);--text:#fff0d2;--muted:#d6b47a;--line:rgba(232,184,104,.24);--sand:#e6b861;--rust:#9f4c2f}*{box-sizing:border-box}
-    body{margin:0;min-height:100vh;font-family:Georgia,serif;color:var(--text);background:radial-gradient(circle at 24% 18%,rgba(230,184,97,.22),transparent 28%),radial-gradient(circle at 78% 64%,rgba(138,199,255,.12),transparent 34%),linear-gradient(140deg,#080604,#26170b 52%,#4e2b14);overflow-x:hidden}body:before{content:"";position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(105deg,transparent 0 13px,rgba(255,232,178,.05) 13px 15px,transparent 15px 36px);opacity:.6;animation:sand 18s linear infinite}@keyframes sand{from{transform:translateX(-60px)}to{transform:translateX(60px)}}
-    main{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:28px 0 44px}.home-link{display:inline-block;margin-bottom:18px;color:var(--muted);text-decoration:none;font:12px Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase}h1{margin:0;font-size:clamp(31px,6vw,76px);line-height:.92;letter-spacing:-.055em;text-transform:uppercase;text-shadow:0 0 22px rgba(230,184,97,.32)}.subtitle{max-width:840px;color:var(--muted);line-height:1.5;font-family:Arial,sans-serif}.layout{display:grid;grid-template-columns:1.08fr .92fr;gap:18px}@media(max-width:920px){.layout{grid-template-columns:1fr}}
-    .panel{border:1px solid var(--line);border-radius:22px;background:var(--panel);box-shadow:0 28px 90px rgba(0,0,0,.44),inset 0 0 50px rgba(230,184,97,.035);backdrop-filter:blur(12px);padding:18px}.play-dock{position:sticky;top:10px;z-index:10;display:grid;gap:10px;margin-bottom:16px}button{border:1px solid var(--line);border-radius:14px;background:linear-gradient(180deg,rgba(105,70,35,.96),rgba(36,25,15,.96));color:var(--text);cursor:pointer;font:14px Arial,sans-serif;padding:12px 14px}button:hover{border-color:rgba(230,184,97,.78);box-shadow:0 0 22px rgba(230,184,97,.15)}.big-play{padding:18px;font-size:20px;font-weight:700;background:linear-gradient(180deg,rgba(159,76,47,.94),rgba(52,34,19,.98))}
-    .utility-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}@media(max-width:680px){.controls,.utility-row{grid-template-columns:1fr}}.control{background:var(--panel2);border:1px solid var(--line);border-radius:16px;padding:12px}label{display:flex;justify-content:space-between;gap:12px;margin-bottom:8px;color:var(--muted);font:12px Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase}input,select{width:100%;accent-color:var(--sand)}select{padding:10px;border-radius:12px;border:1px solid var(--line);background:#1a1008;color:var(--text);font:14px Arial,sans-serif}
-    canvas{width:100%;height:280px;display:block;border-radius:18px;border:1px solid var(--line);background:#080604}.readout{min-height:172px;margin-top:14px;padding:14px;border-radius:16px;border:1px solid var(--line);background:rgba(14,9,5,.76);color:var(--muted);line-height:1.45;white-space:pre-line;font-family:"Courier New",monospace}.preset-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}@media(max-width:620px){.preset-row{grid-template-columns:1fr}}.preset{text-align:left;min-height:76px}.preset strong{display:block;color:#fff;margin-bottom:5px;font-family:Georgia,serif}.preset span{display:block;color:var(--muted);font-size:12px;line-height:1.35}
+    :root {
+      --bg: #080604;
+      --panel: rgba(34, 25, 15, 0.94);
+      --panel-2: rgba(55, 38, 20, 0.95);
+      --text: #fff0d2;
+      --muted: #d6b47a;
+      --line: rgba(232, 184, 104, 0.25);
+      --sand: #e6b861;
+      --rust: #b45231;
+      --ember: #ff7b42;
+    }
+
+    * { box-sizing: border-box; }
+    html { background: var(--bg); }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      overflow-x: hidden;
+      color: var(--text);
+      font-family: Georgia, serif;
+      background:
+        radial-gradient(circle at 24% 18%, rgba(230, 184, 97, 0.22), transparent 28%),
+        radial-gradient(circle at 78% 64%, rgba(138, 199, 255, 0.11), transparent 34%),
+        linear-gradient(140deg, #080604, #26170b 52%, #4e2b14);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      opacity: 0.62;
+      background: repeating-linear-gradient(105deg, transparent 0 13px, rgba(255, 232, 178, 0.05) 13px 15px, transparent 15px 36px);
+      animation: sand 18s linear infinite alternate;
+    }
+
+    @keyframes sand {
+      from { transform: translateX(-55px); }
+      to { transform: translateX(55px); }
+    }
+
+    main {
+      width: min(1220px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 22px 0 48px;
+    }
+
+    .site-rail {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 22px;
+      padding-bottom: 11px;
+      border-bottom: 1px solid rgba(232, 184, 104, 0.14);
+      color: rgba(255, 240, 210, 0.44);
+      font: 10px/1.2 Arial, sans-serif;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .site-rail a,
+    .site-footer a { color: var(--muted); text-decoration: none; }
+    .site-rail a:hover,
+    .site-footer a:hover { color: var(--sand); }
+
+    h1 {
+      margin: 0;
+      max-width: 980px;
+      font-size: clamp(34px, 6.6vw, 78px);
+      line-height: 0.9;
+      letter-spacing: -0.06em;
+      text-transform: uppercase;
+      text-shadow: 0 0 25px rgba(230, 184, 97, 0.3);
+    }
+
+    .subtitle {
+      max-width: 880px;
+      margin: 18px 0 24px;
+      color: var(--muted);
+      font: 15px/1.55 Arial, sans-serif;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.12fr 0.88fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: var(--panel);
+      box-shadow: 0 28px 90px rgba(0, 0, 0, 0.45), inset 0 0 50px rgba(230, 184, 97, 0.035);
+      backdrop-filter: blur(12px);
+    }
+
+    .play-dock {
+      position: sticky;
+      top: 10px;
+      z-index: 30;
+      display: grid;
+      gap: 9px;
+      margin-bottom: 18px;
+      padding: 7px;
+      border: 1px solid rgba(232, 184, 104, 0.22);
+      border-radius: 18px;
+      background: rgba(18, 12, 7, 0.94);
+      box-shadow: 0 14px 38px rgba(0, 0, 0, 0.43);
+      backdrop-filter: blur(14px);
+    }
+
+    button {
+      min-width: 0;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      color: var(--text);
+      background: linear-gradient(180deg, rgba(105, 70, 35, 0.96), rgba(36, 25, 15, 0.97));
+      cursor: pointer;
+      font: 14px Arial, sans-serif;
+    }
+
+    button:hover,
+    button:focus-visible {
+      border-color: rgba(230, 184, 97, 0.8);
+      box-shadow: 0 0 23px rgba(230, 184, 97, 0.16);
+      outline: none;
+    }
+
+    button:disabled { cursor: wait; opacity: 0.62; }
+
+    .big-play {
+      padding: 17px;
+      font-size: 19px;
+      font-weight: 700;
+      background: linear-gradient(180deg, rgba(180, 82, 49, 0.96), rgba(52, 34, 19, 0.99));
+    }
+
+    .big-play.is-playing {
+      color: #1f0d05;
+      background: linear-gradient(180deg, #ff9b5e, #d5522c);
+    }
+
+    .utility-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .section-title {
+      margin: 4px 0 10px;
+      color: rgba(255, 240, 210, 0.58);
+      font: 11px/1.2 Arial, sans-serif;
+      font-weight: 400;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .control {
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--panel-2);
+    }
+
+    label {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font: 11px/1.2 Arial, sans-serif;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+    }
+
+    input,
+    select { width: 100%; accent-color: var(--ember); }
+
+    select {
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      color: var(--text);
+      background: #1a1008;
+      font: 14px Arial, sans-serif;
+    }
+
+    .step-section { margin-top: 18px; }
+
+    .step-filter-grid {
+      display: grid;
+      grid-template-columns: repeat(8, minmax(48px, 1fr));
+      gap: 5px;
+      padding: 9px;
+      border: 1px solid rgba(232, 184, 104, 0.18);
+      border-radius: 16px;
+      background: rgba(12, 8, 4, 0.5);
+    }
+
+    .step-filter-card {
+      min-width: 0;
+      padding: 8px 5px 7px;
+      border: 1px solid rgba(232, 184, 104, 0.13);
+      border-radius: 10px;
+      background: rgba(73, 47, 24, 0.5);
+      transition: border-color 0.08s ease, background 0.08s ease, box-shadow 0.08s ease;
+    }
+
+    .step-filter-card.is-active {
+      border-color: var(--ember);
+      background: rgba(174, 68, 34, 0.35);
+      box-shadow: 0 0 16px rgba(255, 123, 66, 0.28);
+    }
+
+    .step-filter-card label {
+      display: block;
+      margin-bottom: 5px;
+      text-align: center;
+      font-size: 9px;
+    }
+
+    .step-filter-value {
+      display: block;
+      margin-top: 5px;
+      color: rgba(255, 240, 210, 0.58);
+      font: 9px/1 Arial, sans-serif;
+      text-align: center;
+    }
+
+    .note-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(42px, 1fr));
+      gap: 5px;
+      margin-top: 8px;
+    }
+
+    .note {
+      min-height: 82px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 10px 4px;
+      color: rgba(255, 240, 210, 0.74);
+      background: linear-gradient(180deg, rgba(255, 218, 155, 0.12), rgba(34, 20, 9, 0.95));
+      font-size: 11px;
+    }
+
+    canvas {
+      width: 100%;
+      height: 280px;
+      display: block;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #080604;
+    }
+
+    .readout {
+      min-height: 210px;
+      margin-top: 14px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      color: var(--muted);
+      background: rgba(14, 9, 5, 0.78);
+      font: 13px/1.46 "Courier New", monospace;
+      white-space: pre-line;
+    }
+
+    .preset-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .preset { min-height: 82px; text-align: left; }
+    .preset strong { display: block; margin-bottom: 5px; color: #fff; font-family: Georgia, serif; }
+    .preset span { display: block; color: var(--muted); font-size: 12px; line-height: 1.35; }
+
+    .site-footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      margin-top: 24px;
+      padding: 16px 2px 0;
+      border-top: 1px solid rgba(232, 184, 104, 0.14);
+      color: rgba(255, 240, 210, 0.42);
+      font: 10px/1.2 Arial, sans-serif;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    @media (max-width: 960px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 700px) {
+      body { padding-bottom: 126px; }
+      main { width: min(100% - 20px, 620px); padding-top: 14px; }
+      .site-rail span { display: none; }
+      .panel { padding: 12px; border-radius: 17px; }
+      .controls { grid-template-columns: 1fr; }
+      .play-dock {
+        position: fixed;
+        inset: auto 8px max(8px, env(safe-area-inset-bottom)) 8px;
+        margin: 0;
+        padding: 7px;
+        border-color: rgba(255, 123, 66, 0.45);
+        box-shadow: 0 10px 42px rgba(0, 0, 0, 0.74), 0 0 22px rgba(255, 123, 66, 0.1);
+      }
+      .big-play { padding: 12px; font-size: 15px; }
+      .utility-row button { padding: 9px 5px; font-size: 10px; }
+      .step-filter-grid { grid-template-columns: repeat(4, minmax(54px, 1fr)); }
+      .note-grid { grid-template-columns: repeat(7, minmax(34px, 1fr)); gap: 3px; }
+      .note { min-height: 64px; font-size: 9px; }
+      .preset-row { grid-template-columns: 1fr; }
+      .site-footer { padding-bottom: 16px; }
+    }
   </style>
 </head>
 <body>
-  <main><a class="home-link" href="index.html">← Radwalls</a><header><h1>Oil Rigs 2 Synth</h1><p class="subtitle">Chosen style: granular desert wind and sand noise, narrow whistles, corroded radio delay, and distant fairy voices bent until they feel half-real.</p></header>
-    <div class="layout"><section class="panel"><div class="play-dock"><button class="big-play" id="playButton">Start Desert Signal</button><div class="utility-row"><button id="randomButton">Randomize</button><button id="gustButton">Add Gust</button><button id="exportButton">Export .wav</button></div></div><div class="controls" id="controls"></div></section><aside class="panel"><canvas id="scope" width="900" height="360"></canvas><div class="readout" id="readout"></div><div class="preset-row" id="presetRow"></div></aside></div>
+  <main>
+    <nav class="site-rail" aria-label="Radwalls site context">
+      <a href="index.html">← Radwalls music</a>
+      <span>Forgotten Oil Rigs 2 / buried machine</span>
+    </nav>
+
+    <header>
+      <h1>Thunder Arp Beneath the Sand</h1>
+      <p class="subtitle">A low cinematic pulse built from detuned saws, sub impacts, corroded air, and a filter that can be tuned separately for every step of the sequence.</p>
+    </header>
+
+    <div class="layout">
+      <section class="panel">
+        <div class="play-dock" id="playDock">
+          <button class="big-play" id="playButton" type="button">Start Thunder Arp</button>
+          <div class="utility-row">
+            <button id="randomButton" type="button">Randomize</button>
+            <button id="impactButton" type="button">Drop Impact</button>
+            <button id="exportButton" type="button">Export .wav</button>
+          </div>
+        </div>
+
+        <h2 class="section-title">Arp engine</h2>
+        <div class="controls" id="controls"></div>
+
+        <section class="step-section" aria-labelledby="stepFilterTitle">
+          <h2 class="section-title" id="stepFilterTitle">Filter cutoff for each arp note</h2>
+          <div class="step-filter-grid" id="stepFilterGrid"></div>
+        </section>
+
+        <h2 class="section-title" style="margin-top:18px;">Play individual notes</h2>
+        <div class="note-grid" id="noteGrid"></div>
+      </section>
+
+      <aside class="panel">
+        <canvas id="scope" width="900" height="360" aria-label="Forgotten Oil Rigs 2 arp waveform"></canvas>
+        <div class="readout" id="readout" aria-live="polite"></div>
+        <div class="preset-row" id="presetRow"></div>
+      </aside>
+    </div>
+
+    <footer class="site-footer">
+      <span>Radwalls / Forgotten Oil Rigs 2</span>
+      <a href="index.html">Return to the albums</a>
+    </footer>
   </main>
+
   <script>
-    const spec=[["wind","Wind Bed",0,1,.01],["sand","Sand Grain",0,1,.01],["whistle","Whistle",0,1,.01],["fairy","Distant Fairies",0,1,.01],["distort","Distortion",0,1,.01],["drift","Pitch Drift",0,1,.01],["radio","Distant Radio",0,1,.01],["space","Empty Space",0,1,.01],["rig","Rig Metal",0,1,.01]], modes=["dune","rig","mirage","storm"]; let p={wind:.62,sand:.38,whistle:.34,fairy:.28,distort:.22,drift:.42,radio:.34,space:.58,rig:.2,mode:"dune"}, ac, master, analyser, nodes={}, fairies=[], playing=false, raf=0;
-    const presets=[["Low Dunes","dry wind, light sand, almost no voices",{wind:.62,sand:.28,whistle:.18,fairy:.08,distort:.12,drift:.34,radio:.18,space:.62,rig:.12,mode:"dune"}],["Distorted Fairies","far away voices through broken air",{wind:.42,sand:.22,whistle:.52,fairy:.82,distort:.56,drift:.72,radio:.48,space:.8,rig:.18,mode:"mirage"}],["Rig Skeleton","metal groans in a hot offshore wind",{wind:.52,sand:.18,whistle:.26,fairy:.2,distort:.42,drift:.38,radio:.5,space:.52,rig:.76,mode:"rig"}],["White Sandstorm","dense sand, hard whistles, low visibility",{wind:.9,sand:.86,whistle:.72,fairy:.24,distort:.38,drift:.8,radio:.34,space:.48,rig:.36,mode:"storm"}]];
-    const cv=scope,cx=cv.getContext("2d"); spec.forEach(s=>controls.insertAdjacentHTML("beforeend",`<div class="control"><label for="${s[0]}">${s[1]} <span data-v="${s[0]}"></span></label><input id="${s[0]}" type="range" min="${s[2]}" max="${s[3]}" step="${s[4]}"></div>`)); controls.insertAdjacentHTML("beforeend",`<div class="control"><label for="mode">Landscape</label><select id="mode">${modes.map(m=>`<option value="${m}">${m}</option>`).join("")}</select></div>`);
-    function noise(c,s=2){const b=c.createBuffer(1,c.sampleRate*s,c.sampleRate),d=b.getChannelData(0);let last=0;for(let i=0;i<d.length;i++){last=last*.985+(Math.random()*2-1)*.015;d[i]=last+(Math.random()*2-1)*.08}return b} function curve(a){const c=new Float32Array(2048),k=1+a*110;for(let i=0;i<c.length;i++){const x=i*2/c.length-1;c[i]=Math.tanh(k*x)/Math.tanh(k)}return c} function imp(c,s,d){const b=c.createBuffer(2,c.sampleRate*s,c.sampleRate);for(let ch=0;ch<2;ch++){const data=b.getChannelData(ch);for(let i=0;i<data.length;i++)data[i]=(Math.random()*2-1)*Math.pow(1-i/data.length,d)}return b} function base(){return p.mode==="rig"?146:p.mode==="mirage"?493.88:p.mode==="storm"?311.13:220}
-    function apply(){document.querySelectorAll("input,select").forEach(e=>e.value=p[e.id]);document.querySelectorAll("[data-v]").forEach(e=>e.textContent=Math.round(p[e.dataset.v]*100)+"%"); if(ac){master.gain.setTargetAtTime(.72,ac.currentTime,.04);nodes.wf.frequency.setTargetAtTime(180+p.wind*1450,ac.currentTime,.05);nodes.wf.Q.setTargetAtTime(.4+p.wind*1.8,ac.currentTime,.05);nodes.sf.frequency.setTargetAtTime(1800+p.sand*9200,ac.currentTime,.05);nodes.sf.Q.setTargetAtTime(2+p.sand*14,ac.currentTime,.05);nodes.wh.frequency.setTargetAtTime(base()*(2.5+p.drift*3.5),ac.currentTime,.05);nodes.wh.detune.setTargetAtTime(80*p.drift,ac.currentTime,.05);nodes.wg.gain.setTargetAtTime(p.whistle*.13,ac.currentTime,.05);nodes.fg.gain.setTargetAtTime(p.fairy*.13,ac.currentTime,.05);nodes.rig.frequency.setTargetAtTime(36+p.rig*80,ac.currentTime,.05);nodes.rg.gain.setTargetAtTime(p.rig*.18,ac.currentTime,.05);nodes.d.delayTime.setTargetAtTime(.12+p.radio*.72,ac.currentTime,.05);nodes.dw.gain.setTargetAtTime(p.radio*.46,ac.currentTime,.05);nodes.fb.gain.setTargetAtTime(.12+p.radio*.54,ac.currentTime,.05);nodes.rw.gain.setTargetAtTime(p.space*.7,ac.currentTime,.05);nodes.sh.curve=curve(p.distort);fairies.forEach((v,i)=>{v.frequency.setTargetAtTime(base()*[1.5,2.01,2.98,4.04][i],ac.currentTime,.05);v.detune.setTargetAtTime((i-1.5)*21+p.drift*180,ac.currentTime,.05)})} readout.textContent=`STYLE\nWind, sand, whistles, distorted distant fairies.\n\nCURRENT PATCH\n${p.mode}\nWind ${Math.round(p.wind*100)}%\nSand ${Math.round(p.sand*100)}%\nFairies ${Math.round(p.fairy*100)}%\nRadio delay ${Math.round(p.radio*100)}%\n\nUSE\nLow wind: empty travel, lost beach, rig distance.\nHigh sand + whistle: danger, bad weather, mirage scenes.`}
-    async function start(){if(!ac){ac=new(AudioContext||webkitAudioContext)();master=ac.createGain();analyser=ac.createAnalyser();analyser.fftSize=2048;nodes.sh=ac.createWaveShaper();nodes.wf=ac.createBiquadFilter();nodes.wf.type="bandpass";nodes.sf=ac.createBiquadFilter();nodes.sf.type="highpass";nodes.wh=ac.createOscillator();nodes.wh.type="sine";nodes.wg=ac.createGain();nodes.fg=ac.createGain();nodes.rig=ac.createOscillator();nodes.rig.type="sawtooth";nodes.rg=ac.createGain();nodes.d=ac.createDelay(1.2);nodes.dw=ac.createGain();nodes.fb=ac.createGain();nodes.rv=ac.createConvolver();nodes.rv.buffer=imp(ac,3.2,2.1);nodes.rw=ac.createGain();const w=ac.createBufferSource(),s=ac.createBufferSource();w.buffer=noise(ac,3);s.buffer=noise(ac,1);w.loop=s.loop=true;w.connect(nodes.wf);s.connect(nodes.sf);nodes.wf.connect(master);nodes.sf.connect(master);nodes.wh.connect(nodes.wg);nodes.wg.connect(master);for(let i=0;i<4;i++){const v=ac.createOscillator();v.type=i%2?"triangle":"sine";v.connect(nodes.fg);v.start();fairies.push(v)}nodes.fg.connect(nodes.sh);nodes.rig.connect(nodes.rg);nodes.rg.connect(nodes.sh);nodes.sh.connect(master);master.connect(nodes.d);nodes.d.connect(nodes.fb);nodes.fb.connect(nodes.d);nodes.d.connect(nodes.dw);nodes.dw.connect(master);master.connect(nodes.rv);nodes.rv.connect(nodes.rw);nodes.rw.connect(analyser);master.connect(analyser);analyser.connect(ac.destination);w.start();s.start();nodes.wh.start();nodes.rig.start()}if(ac.state==="suspended")await ac.resume();playing=true;playButton.textContent="Stop Desert Signal";apply();draw()}
-    function stop(){playing=false;playButton.textContent="Start Desert Signal";if(master)master.gain.setTargetAtTime(.0001,ac.currentTime,.03);setTimeout(()=>{if(master)master.gain.value=.72},120);cancelAnimationFrame(raf)} function draw(){if(!playing)return;const a=new Uint8Array(analyser.frequencyBinCount);analyser.getByteTimeDomainData(a);cx.fillStyle="#080604";cx.fillRect(0,0,cv.width,cv.height);cx.strokeStyle="rgba(230,184,97,.78)";cx.beginPath();a.forEach((v,i)=>{const x=i/(a.length-1)*cv.width,y=v/255*cv.height;i?cx.lineTo(x,y):cx.moveTo(x,y)});cx.stroke();raf=requestAnimationFrame(draw)}
-    function set(x){p={...p,...x};apply()} document.querySelectorAll("input,select").forEach(e=>e.addEventListener("input",()=>{p[e.id]=e.type==="range"?Number(e.value):e.value;apply()})); playButton.onclick=()=>playing?stop():start(); randomButton.onclick=()=>set({wind:.25+Math.random()*.75,sand:Math.random(),whistle:Math.random(),fairy:Math.random(),distort:Math.random()*.85,drift:Math.random(),radio:Math.random(),space:.24+Math.random()*.76,rig:Math.random(),mode:modes[Math.floor(Math.random()*modes.length)]}); gustButton.onclick=()=>set({wind:Math.min(1,p.wind+.16),sand:Math.min(1,p.sand+.14),whistle:Math.min(1,p.whistle+.08)});
-    function renderExport(){const sr=ac?.sampleRate||48000,dur=7,o=new OfflineAudioContext(2,sr*dur,sr),out=o.createGain(),sh=o.createWaveShaper(),wf=o.createBiquadFilter(),sf=o.createBiquadFilter(),del=o.createDelay(1.2),fb=o.createGain(),dw=o.createGain(),rv=o.createConvolver(),rw=o.createGain();out.gain.value=.72;sh.curve=curve(p.distort);wf.type="bandpass";wf.frequency.value=180+p.wind*1450;wf.Q.value=.4+p.wind*1.8;sf.type="highpass";sf.frequency.value=1800+p.sand*9200;sf.Q.value=2+p.sand*14;const w=o.createBufferSource(),s=o.createBufferSource();w.buffer=noise(o,dur);s.buffer=noise(o,dur);w.connect(wf);s.connect(sf);wf.connect(out);sf.connect(out);const wh=o.createOscillator(),wg=o.createGain(),b=base();wh.type="sine";wh.frequency.value=b*(2.5+p.drift*3.5);wh.detune.value=80*p.drift;wg.gain.value=p.whistle*.13;wh.connect(wg);wg.connect(out);for(let i=0;i<4;i++){const v=o.createOscillator(),g=o.createGain();v.type=i%2?"triangle":"sine";v.frequency.value=b*[1.5,2.01,2.98,4.04][i];v.detune.value=(i-1.5)*21+p.drift*180;g.gain.value=p.fairy*.032;v.connect(g);g.connect(sh);v.start();v.stop(dur)}const ro=o.createOscillator(),rg=o.createGain();ro.type="sawtooth";ro.frequency.value=36+p.rig*80;rg.gain.value=p.rig*.18;ro.connect(rg);rg.connect(sh);sh.connect(out);del.delayTime.value=.12+p.radio*.72;fb.gain.value=.12+p.radio*.54;dw.gain.value=p.radio*.46;rv.buffer=imp(o,3.2,2.1);rw.gain.value=p.space*.7;out.connect(del);del.connect(fb);fb.connect(del);del.connect(dw);dw.connect(out);out.connect(rv);rv.connect(rw);rw.connect(o.destination);out.connect(o.destination);w.start();s.start();wh.start();ro.start();w.stop(dur);s.stop(dur);wh.stop(dur);ro.stop(dur);return o.startRendering()} function wav(b){const l=b.length*b.numberOfChannels*2+44,v=new DataView(new ArrayBuffer(l)),w=(o,s)=>[...s].forEach((c,i)=>v.setUint8(o+i,c.charCodeAt(0)));w(0,"RIFF");v.setUint32(4,l-8,true);w(8,"WAVE");w(12,"fmt ");v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,b.numberOfChannels,true);v.setUint32(24,b.sampleRate,true);v.setUint32(28,b.sampleRate*b.numberOfChannels*2,true);v.setUint16(32,b.numberOfChannels*2,true);v.setUint16(34,16,true);w(36,"data");v.setUint32(40,l-44,true);let o=44;for(let i=0;i<b.length;i++)for(let ch=0;ch<b.numberOfChannels;ch++){const s=Math.max(-1,Math.min(1,b.getChannelData(ch)[i]));v.setInt16(o,s<0?s*32768:s*32767,true);o+=2}return new Blob([v],{type:"audio/wav"})} exportButton.onclick=async()=>{const b=await renderExport(),a=document.createElement("a");a.href=URL.createObjectURL(wav(b));a.download=`forgotten-oil-rigs-2-synth-${Date.now()}.wav`;a.click();URL.revokeObjectURL(a.href)};
-    presets.forEach(([n,t,pa])=>{const b=document.createElement("button");b.className="preset";b.innerHTML=`<strong>${n}</strong><span>${t}</span>`;b.onclick=()=>set(pa);presetRow.appendChild(b)});apply();
+    const controlSpec = [
+      ["tempo", "Tempo", 58, 172, 1],
+      ["thunder", "Sub thunder", 0, 1, 0.01],
+      ["saws", "Saw weight", 0, 1, 0.01],
+      ["detune", "Saw spread", 0, 1, 0.01],
+      ["drive", "Drive", 0, 1, 0.01],
+      ["cutoff", "Filter range", 0, 1, 0.01],
+      ["resonance", "Filter resonance", 0, 1, 0.01],
+      ["filterEnv", "Filter punch", 0, 1, 0.01],
+      ["atmosphere", "Wind and distance", 0, 1, 0.01]
+    ];
+
+    const modes = ["dune", "rig", "mirage", "storm"];
+    const sequences = {
+      dune: [0, 0, 7, 3, 10, 7, 3, 12],
+      rig: [0, 0, 5, 0, 7, 3, 10, 7],
+      mirage: [0, 12, 7, 15, 10, 19, 7, 22],
+      storm: [0, 3, 7, 10, 0, 12, 10, 7]
+    };
+    const roots = { dune: 34, rig: 31, mirage: 38, storm: 29 };
+
+    const defaults = {
+      tempo: 104,
+      thunder: 0.76,
+      saws: 0.72,
+      detune: 0.5,
+      drive: 0.46,
+      cutoff: 0.54,
+      resonance: 0.58,
+      filterEnv: 0.7,
+      atmosphere: 0.45,
+      mode: "dune"
+    };
+
+    let params = { ...defaults };
+    let stepFilters = [0.34, 0.72, 0.24, 0.86, 0.42, 0.66, 0.3, 0.94];
+    let audioContext;
+    let master;
+    let analyser;
+    let effects;
+    let atmosphereNodes;
+    let playing = false;
+    let arpTimer = 0;
+    let arpStep = 0;
+    let animationFrame = 0;
+
+    const controls = document.getElementById("controls");
+    const stepFilterGrid = document.getElementById("stepFilterGrid");
+    const playButton = document.getElementById("playButton");
+    const randomButton = document.getElementById("randomButton");
+    const impactButton = document.getElementById("impactButton");
+    const exportButton = document.getElementById("exportButton");
+    const noteGrid = document.getElementById("noteGrid");
+    const presetRow = document.getElementById("presetRow");
+    const readout = document.getElementById("readout");
+    const canvas = document.getElementById("scope");
+    const canvasContext = canvas.getContext("2d");
+
+    const presets = [
+      ["Buried Pulse", "slow sub impacts with a narrow repeating filter", { tempo: 82, thunder: 0.9, saws: 0.62, detune: 0.34, drive: 0.42, cutoff: 0.38, resonance: 0.7, filterEnv: 0.68, atmosphere: 0.48, mode: "dune" }, [0.2, 0.54, 0.16, 0.68, 0.24, 0.48, 0.14, 0.76]],
+      ["Rig Teeth", "vicious saws striking against a hard metal pattern", { tempo: 118, thunder: 0.74, saws: 0.95, detune: 0.58, drive: 0.78, cutoff: 0.58, resonance: 0.52, filterEnv: 0.86, atmosphere: 0.26, mode: "rig" }, [0.3, 0.9, 0.22, 0.78, 0.36, 0.96, 0.28, 0.84]],
+      ["Distant Fairies", "high broken harmonics above a deep moving floor", { tempo: 96, thunder: 0.68, saws: 0.58, detune: 0.78, drive: 0.56, cutoff: 0.74, resonance: 0.82, filterEnv: 0.56, atmosphere: 0.9, mode: "mirage" }, [0.46, 0.9, 0.64, 0.98, 0.52, 0.82, 0.58, 1]],
+      ["White Sand Engine", "fast hostile sequence with wide filters and heavy impacts", { tempo: 148, thunder: 0.86, saws: 0.9, detune: 0.7, drive: 0.72, cutoff: 0.68, resonance: 0.64, filterEnv: 0.92, atmosphere: 0.72, mode: "storm" }, [0.28, 0.74, 0.38, 0.96, 0.2, 0.88, 0.44, 1]]
+    ];
+
+    const notes = [
+      ["E1", 28], ["G1", 31], ["A1", 33], ["B1", 35], ["D2", 38], ["E2", 40], ["G2", 43]
+    ];
+
+    function midiToFrequency(midi) {
+      return 440 * Math.pow(2, (midi - 69) / 12);
+    }
+
+    function seededNoise(seed) {
+      const value = Math.sin(seed * 12.9898 + 78.233) * 43758.5453;
+      return value - Math.floor(value);
+    }
+
+    function makeNoiseBuffer(context, seconds, seed = 1) {
+      const length = Math.max(1, Math.floor(context.sampleRate * seconds));
+      const buffer = context.createBuffer(1, length, context.sampleRate);
+      const data = buffer.getChannelData(0);
+      let low = 0;
+      for (let index = 0; index < length; index += 1) {
+        const white = seededNoise(seed + index * 0.193) * 2 - 1;
+        low = low * 0.985 + white * 0.015;
+        data[index] = low * 0.72 + white * 0.28;
+      }
+      return buffer;
+    }
+
+    function makeImpulse(context, seconds, decay) {
+      const length = Math.floor(context.sampleRate * seconds);
+      const buffer = context.createBuffer(2, length, context.sampleRate);
+      for (let channel = 0; channel < 2; channel += 1) {
+        const data = buffer.getChannelData(channel);
+        for (let index = 0; index < length; index += 1) {
+          const falloff = Math.pow(1 - index / length, decay);
+          data[index] = (seededNoise(index + channel * 997) * 2 - 1) * falloff;
+        }
+      }
+      return buffer;
+    }
+
+    function distortionCurve(amount) {
+      const curve = new Float32Array(4096);
+      const drive = 1 + amount * 180;
+      for (let index = 0; index < curve.length; index += 1) {
+        const x = index * 2 / (curve.length - 1) - 1;
+        curve[index] = Math.tanh(drive * x) / Math.tanh(drive);
+      }
+      return curve;
+    }
+
+    function createEffects(context, destination, settings) {
+      const input = context.createGain();
+      const dry = context.createGain();
+      const delay = context.createDelay(1.2);
+      const feedback = context.createGain();
+      const delayWet = context.createGain();
+      const reverb = context.createConvolver();
+      const reverbWet = context.createGain();
+      reverb.buffer = makeImpulse(context, 3.3, 2.2);
+
+      input.connect(dry);
+      dry.connect(destination);
+      input.connect(delay);
+      delay.connect(feedback);
+      feedback.connect(delay);
+      delay.connect(delayWet);
+      delayWet.connect(destination);
+      input.connect(reverb);
+      reverb.connect(reverbWet);
+      reverbWet.connect(destination);
+
+      const api = {
+        input,
+        update(next) {
+          const now = context.currentTime;
+          dry.gain.setTargetAtTime(0.78, now, 0.03);
+          delay.delayTime.setTargetAtTime(0.12 + next.atmosphere * 0.42, now, 0.03);
+          feedback.gain.setTargetAtTime(0.1 + next.atmosphere * 0.34, now, 0.03);
+          delayWet.gain.setTargetAtTime(next.atmosphere * 0.22, now, 0.03);
+          reverbWet.gain.setTargetAtTime(0.04 + next.atmosphere * 0.48, now, 0.03);
+        }
+      };
+      api.update(settings);
+      return api;
+    }
+
+    function createAtmosphere(context, destination, settings, duration = null) {
+      const output = context.createGain();
+      const wind = context.createBufferSource();
+      const windFilter = context.createBiquadFilter();
+      const whistle = context.createOscillator();
+      const whistleGain = context.createGain();
+      const fairy = context.createOscillator();
+      const fairyGain = context.createGain();
+      const fairyShaper = context.createWaveShaper();
+
+      wind.buffer = makeNoiseBuffer(context, duration || 4, 420);
+      wind.loop = duration === null;
+      windFilter.type = "bandpass";
+      windFilter.frequency.value = 260 + settings.atmosphere * 760;
+      windFilter.Q.value = 0.34 + settings.atmosphere * 1.2;
+      whistle.type = "sine";
+      whistle.frequency.value = 940 + settings.atmosphere * 820;
+      whistleGain.gain.value = 0.002 + settings.atmosphere * 0.008;
+      fairy.type = "triangle";
+      fairy.frequency.value = settings.mode === "mirage" ? 987.77 : 659.25;
+      fairy.detune.value = 17;
+      fairyGain.gain.value = settings.atmosphere * 0.005;
+      fairyShaper.curve = distortionCurve(0.2 + settings.drive * 0.25);
+      output.gain.value = 0.012 + settings.atmosphere * 0.034;
+
+      wind.connect(windFilter);
+      windFilter.connect(output);
+      whistle.connect(whistleGain);
+      whistleGain.connect(output);
+      fairy.connect(fairyGain);
+      fairyGain.connect(fairyShaper);
+      fairyShaper.connect(output);
+      output.connect(destination);
+      wind.start(0);
+      whistle.start(0);
+      fairy.start(0);
+      if (duration !== null) {
+        wind.stop(duration);
+        whistle.stop(duration);
+        fairy.stop(duration);
+      }
+
+      return {
+        output,
+        windFilter,
+        whistleGain,
+        fairyGain,
+        update(next) {
+          const now = context.currentTime;
+          output.gain.setTargetAtTime(0.012 + next.atmosphere * 0.034, now, 0.04);
+          windFilter.frequency.setTargetAtTime(260 + next.atmosphere * 760, now, 0.04);
+          whistleGain.gain.setTargetAtTime(0.002 + next.atmosphere * 0.008, now, 0.04);
+          fairyGain.gain.setTargetAtTime(next.atmosphere * 0.005, now, 0.04);
+        }
+      };
+    }
+
+    function triggerArpVoice(context, destination, when, midi, stepIndex, settings, filters, seed, accent = 1) {
+      const frequency = midiToFrequency(midi);
+      const interval = 60 / settings.tempo / 2;
+      const duration = Math.max(0.24, Math.min(0.82, interval * 1.45));
+      const mix = context.createGain();
+      const filter = context.createBiquadFilter();
+      const shaper = context.createWaveShaper();
+      const amp = context.createGain();
+      const pan = context.createStereoPanner();
+      const stepCutoff = filters[stepIndex % filters.length];
+      const cutoff = Math.max(75, 90 + settings.cutoff * 6200 * (0.12 + stepCutoff * 0.98));
+      const filterPeak = Math.min(15000, cutoff * (1.05 + settings.filterEnv * 3.6));
+
+      filter.type = "lowpass";
+      filter.Q.value = 0.7 + settings.resonance * 17;
+      filter.frequency.setValueAtTime(Math.max(65, cutoff * 0.28), when);
+      filter.frequency.exponentialRampToValueAtTime(filterPeak, when + 0.025 + settings.filterEnv * 0.045);
+      filter.frequency.exponentialRampToValueAtTime(Math.max(65, cutoff * 0.2), when + duration);
+      shaper.curve = distortionCurve(0.035 + settings.drive * 0.46);
+      shaper.oversample = "4x";
+      amp.gain.setValueAtTime(0.0001, when);
+      amp.gain.exponentialRampToValueAtTime((0.12 + settings.saws * 0.15) * accent, when + 0.008);
+      amp.gain.exponentialRampToValueAtTime(0.0001, when + duration);
+      pan.pan.value = (stepIndex % 2 ? 0.2 : -0.2) * settings.detune;
+
+      mix.connect(filter);
+      filter.connect(shaper);
+      shaper.connect(amp);
+      amp.connect(pan);
+      pan.connect(destination);
+
+      const spread = 4 + settings.detune * 28;
+      [-spread, 0, spread].forEach((detune, index) => {
+        const oscillator = context.createOscillator();
+        const oscillatorGain = context.createGain();
+        oscillator.type = "sawtooth";
+        oscillator.frequency.value = frequency;
+        oscillator.detune.value = detune + (seededNoise(seed + index * 11) - 0.5) * 2;
+        oscillatorGain.gain.value = 0.14 + settings.saws * 0.12;
+        oscillator.connect(oscillatorGain);
+        oscillatorGain.connect(mix);
+        oscillator.start(when);
+        oscillator.stop(when + duration + 0.03);
+      });
+
+      const sub = context.createOscillator();
+      const subGain = context.createGain();
+      sub.type = "triangle";
+      sub.frequency.value = frequency / 2;
+      subGain.gain.value = 0.12 + settings.thunder * 0.22;
+      sub.connect(subGain);
+      subGain.connect(mix);
+      sub.start(when);
+      sub.stop(when + duration + 0.03);
+    }
+
+    function triggerThunder(context, destination, when, settings, seed) {
+      const boom = context.createOscillator();
+      const boomGain = context.createGain();
+      const boomFilter = context.createBiquadFilter();
+      boom.type = "sine";
+      boom.frequency.setValueAtTime(64, when);
+      boom.frequency.exponentialRampToValueAtTime(26, when + 0.72);
+      boomFilter.type = "lowpass";
+      boomFilter.frequency.value = 180;
+      boomGain.gain.setValueAtTime(0.0001, when);
+      boomGain.gain.exponentialRampToValueAtTime(0.18 + settings.thunder * 0.32, when + 0.008);
+      boomGain.gain.exponentialRampToValueAtTime(0.0001, when + 1.05);
+      boom.connect(boomFilter);
+      boomFilter.connect(boomGain);
+      boomGain.connect(destination);
+      boom.start(when);
+      boom.stop(when + 1.08);
+
+      const impact = context.createBufferSource();
+      const impactFilter = context.createBiquadFilter();
+      const impactGain = context.createGain();
+      impact.buffer = makeNoiseBuffer(context, 0.28, seed + 87);
+      impactFilter.type = "lowpass";
+      impactFilter.frequency.value = 120 + settings.thunder * 320;
+      impactFilter.Q.value = 1.2;
+      impactGain.gain.setValueAtTime(0.0001, when);
+      impactGain.gain.exponentialRampToValueAtTime(0.08 + settings.thunder * 0.15, when + 0.004);
+      impactGain.gain.exponentialRampToValueAtTime(0.0001, when + 0.24);
+      impact.connect(impactFilter);
+      impactFilter.connect(impactGain);
+      impactGain.connect(destination);
+      impact.start(when);
+      impact.stop(when + 0.28);
+    }
+
+    async function ensureAudio() {
+      if (!audioContext) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        audioContext = new AudioContextClass();
+        master = audioContext.createGain();
+        const compressor = audioContext.createDynamicsCompressor();
+        analyser = audioContext.createAnalyser();
+        analyser.fftSize = 2048;
+        master.gain.value = 0.58;
+        compressor.threshold.value = -18;
+        compressor.knee.value = 10;
+        compressor.ratio.value = 6;
+        compressor.attack.value = 0.002;
+        compressor.release.value = 0.22;
+        master.connect(compressor);
+        compressor.connect(analyser);
+        analyser.connect(audioContext.destination);
+        effects = createEffects(audioContext, master, params);
+        atmosphereNodes = createAtmosphere(audioContext, effects.input, params);
+      }
+      if (audioContext.state === "suspended") await audioContext.resume();
+      master.gain.cancelScheduledValues(audioContext.currentTime);
+      master.gain.setTargetAtTime(0.58, audioContext.currentTime, 0.025);
+    }
+
+    function highlightStep(index) {
+      document.querySelectorAll(".step-filter-card").forEach((card, cardIndex) => {
+        card.classList.toggle("is-active", cardIndex === index);
+      });
+    }
+
+    async function playStep(index, midi = null, accent = 1) {
+      await ensureAudio();
+      const sequence = sequences[params.mode];
+      const note = midi ?? roots[params.mode] + sequence[index % sequence.length];
+      const now = audioContext.currentTime + 0.012;
+      triggerArpVoice(audioContext, effects.input, now, note, index, params, stepFilters, index * 79 + note, accent);
+      if (midi === null && index % 4 === 0) triggerThunder(audioContext, effects.input, now, params, index * 101 + 7);
+      highlightStep(index % 8);
+      document.body.dataset.arpStep = String(index % 8);
+      updateReadout(index % 8);
+      if (!animationFrame) drawScope();
+    }
+
+    function scheduleArp() {
+      if (!playing) return;
+      playStep(arpStep);
+      arpStep = (arpStep + 1) % 8;
+      arpTimer = window.setTimeout(scheduleArp, 60000 / params.tempo / 2);
+    }
+
+    async function startArp() {
+      await ensureAudio();
+      playing = true;
+      playButton.textContent = "Stop Thunder Arp";
+      playButton.classList.add("is-playing");
+      window.clearTimeout(arpTimer);
+      scheduleArp();
+    }
+
+    function stopArp() {
+      playing = false;
+      window.clearTimeout(arpTimer);
+      window.cancelAnimationFrame(animationFrame);
+      animationFrame = 0;
+      playButton.textContent = "Start Thunder Arp";
+      playButton.classList.remove("is-playing");
+      highlightStep(-1);
+      if (master && audioContext) master.gain.setTargetAtTime(0.0001, audioContext.currentTime, 0.08);
+      updateReadout(-1);
+    }
+
+    function drawScope() {
+      if (!analyser) {
+        animationFrame = 0;
+        return;
+      }
+      const data = new Uint8Array(analyser.frequencyBinCount);
+      analyser.getByteTimeDomainData(data);
+      canvasContext.fillStyle = "#080604";
+      canvasContext.fillRect(0, 0, canvas.width, canvas.height);
+      canvasContext.strokeStyle = "rgba(230,184,97,.84)";
+      canvasContext.lineWidth = 2;
+      canvasContext.beginPath();
+      data.forEach((value, index) => {
+        const x = index / (data.length - 1) * canvas.width;
+        const y = value / 255 * canvas.height;
+        if (index === 0) canvasContext.moveTo(x, y);
+        else canvasContext.lineTo(x, y);
+      });
+      canvasContext.stroke();
+      if (playing) animationFrame = window.requestAnimationFrame(drawScope);
+      else animationFrame = 0;
+    }
+
+    function updateReadout(activeStep = Number(document.body.dataset.arpStep ?? -1)) {
+      const activeFilter = activeStep >= 0 ? Math.round(stepFilters[activeStep] * 100) : "—";
+      readout.textContent = `THUNDER ENGINE\n${playing ? `step ${activeStep + 1} is firing` : "sequence stopped"}\n\nCURRENT PATTERN\n${params.mode}\n${params.tempo} BPM / eighth-note pulse\nSub thunder ${Math.round(params.thunder * 100)}%\nSaw weight ${Math.round(params.saws * 100)}%\nDrive ${Math.round(params.drive * 100)}%\nActive step filter ${activeFilter}%\n\nFILTER\nThe main range sets the ceiling. Every numbered slider reshapes only that note in the arp.`;
+    }
+
+    function applyParams() {
+      document.querySelectorAll("#controls input, #controls select").forEach(element => {
+        element.value = params[element.id];
+      });
+      document.querySelectorAll("[data-value]").forEach(element => {
+        const key = element.dataset.value;
+        element.textContent = key === "tempo" ? `${params[key]} BPM` : `${Math.round(params[key] * 100)}%`;
+      });
+      document.querySelectorAll(".step-filter").forEach((input, index) => {
+        input.value = stepFilters[index];
+        document.querySelector(`[data-step-value="${index}"]`).textContent = `${Math.round(stepFilters[index] * 100)}%`;
+      });
+      if (effects) effects.update(params);
+      if (atmosphereNodes) atmosphereNodes.update(params);
+      updateReadout();
+    }
+
+    function setPatch(nextParams, nextFilters = stepFilters) {
+      params = { ...params, ...nextParams };
+      stepFilters = [...nextFilters];
+      applyParams();
+    }
+
+    function renderControls() {
+      controlSpec.forEach(([key, label, min, max, step]) => {
+        controls.insertAdjacentHTML("beforeend", `<div class="control global-control"><label for="${key}">${label}<span data-value="${key}"></span></label><input id="${key}" type="range" min="${min}" max="${max}" step="${step}" /></div>`);
+      });
+      controls.insertAdjacentHTML("beforeend", `<div class="control"><label for="mode">Arp pattern</label><select id="mode">${modes.map(mode => `<option value="${mode}">${mode}</option>`).join("")}</select></div>`);
+      controls.querySelectorAll("input, select").forEach(element => {
+        element.addEventListener("input", () => {
+          params[element.id] = element.type === "range" ? Number(element.value) : element.value;
+          applyParams();
+        });
+      });
+    }
+
+    function renderStepFilters() {
+      stepFilters.forEach((value, index) => {
+        stepFilterGrid.insertAdjacentHTML("beforeend", `<div class="step-filter-card" data-step-card="${index}"><label for="stepFilter${index}">Step ${index + 1}</label><input class="step-filter" id="stepFilter${index}" type="range" min="0" max="1" step="0.01" value="${value}" aria-label="Filter cutoff for arp step ${index + 1}" /><span class="step-filter-value" data-step-value="${index}">${Math.round(value * 100)}%</span></div>`);
+      });
+      stepFilterGrid.querySelectorAll(".step-filter").forEach((input, index) => {
+        input.addEventListener("input", () => {
+          stepFilters[index] = Number(input.value);
+          document.querySelector(`[data-step-value="${index}"]`).textContent = `${Math.round(stepFilters[index] * 100)}%`;
+          updateReadout(index);
+        });
+      });
+    }
+
+    function renderNotes() {
+      notes.forEach(([name, midi], index) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "note";
+        button.textContent = name;
+        button.setAttribute("aria-label", `Play arp note ${name}`);
+        button.addEventListener("click", () => playStep(index % 8, midi, 1.08));
+        noteGrid.appendChild(button);
+      });
+    }
+
+    function renderPresets() {
+      presets.forEach(([name, description, presetParams, presetFilters]) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "preset";
+        button.innerHTML = `<strong>${name}</strong><span>${description}</span>`;
+        button.addEventListener("click", () => setPatch(presetParams, presetFilters));
+        presetRow.appendChild(button);
+      });
+    }
+
+    function renderOfflineExport() {
+      const sampleRate = audioContext?.sampleRate || 48000;
+      const duration = 8;
+      const offline = new OfflineAudioContext(2, sampleRate * duration, sampleRate);
+      const offlineMaster = offline.createGain();
+      const compressor = offline.createDynamicsCompressor();
+      const snapshot = { ...params };
+      const filterSnapshot = [...stepFilters];
+      const offlineEffects = createEffects(offline, offlineMaster, snapshot);
+      offlineMaster.gain.value = 0.58;
+      compressor.threshold.value = -18;
+      compressor.ratio.value = 6;
+      offlineMaster.connect(compressor);
+      compressor.connect(offline.destination);
+      createAtmosphere(offline, offlineEffects.input, snapshot, duration);
+
+      const interval = 60 / snapshot.tempo / 2;
+      const sequence = sequences[snapshot.mode];
+      let time = 0.06;
+      let step = 0;
+      while (time < duration - 0.4) {
+        const index = step % 8;
+        const midi = roots[snapshot.mode] + sequence[index];
+        triggerArpVoice(offline, offlineEffects.input, time, midi, index, snapshot, filterSnapshot, 1800 + step * 31);
+        if (index % 4 === 0) triggerThunder(offline, offlineEffects.input, time, snapshot, 2100 + step * 43);
+        time += interval;
+        step += 1;
+      }
+      return offline.startRendering();
+    }
+
+    function audioBufferToWav(buffer) {
+      const byteLength = buffer.length * buffer.numberOfChannels * 2 + 44;
+      const view = new DataView(new ArrayBuffer(byteLength));
+      const write = (offset, text) => [...text].forEach((character, index) => view.setUint8(offset + index, character.charCodeAt(0)));
+      write(0, "RIFF");
+      view.setUint32(4, byteLength - 8, true);
+      write(8, "WAVE");
+      write(12, "fmt ");
+      view.setUint32(16, 16, true);
+      view.setUint16(20, 1, true);
+      view.setUint16(22, buffer.numberOfChannels, true);
+      view.setUint32(24, buffer.sampleRate, true);
+      view.setUint32(28, buffer.sampleRate * buffer.numberOfChannels * 2, true);
+      view.setUint16(32, buffer.numberOfChannels * 2, true);
+      view.setUint16(34, 16, true);
+      write(36, "data");
+      view.setUint32(40, byteLength - 44, true);
+      let offset = 44;
+      for (let index = 0; index < buffer.length; index += 1) {
+        for (let channel = 0; channel < buffer.numberOfChannels; channel += 1) {
+          const sample = Math.max(-1, Math.min(1, buffer.getChannelData(channel)[index]));
+          view.setInt16(offset, sample < 0 ? sample * 32768 : sample * 32767, true);
+          offset += 2;
+        }
+      }
+      return new Blob([view], { type: "audio/wav" });
+    }
+
+    async function exportWav() {
+      exportButton.disabled = true;
+      exportButton.textContent = "Rendering…";
+      try {
+        const rendered = await renderOfflineExport();
+        const url = URL.createObjectURL(audioBufferToWav(rendered));
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = `forgotten-oil-rigs-2-thunder-arp-${Date.now()}.wav`;
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        window.setTimeout(() => URL.revokeObjectURL(url), 1200);
+      } finally {
+        exportButton.disabled = false;
+        exportButton.textContent = "Export .wav";
+      }
+    }
+
+    playButton.addEventListener("click", () => playing ? stopArp() : startArp());
+    impactButton.addEventListener("click", async () => {
+      await ensureAudio();
+      const now = audioContext.currentTime + 0.012;
+      triggerThunder(audioContext, effects.input, now, params, Date.now() % 10000);
+      triggerArpVoice(audioContext, effects.input, now, roots[params.mode], 0, params, stepFilters, 991, 1.16);
+      if (!animationFrame) drawScope();
+    });
+    randomButton.addEventListener("click", () => {
+      const nextFilters = Array.from({ length: 8 }, () => 0.12 + Math.random() * 0.88);
+      setPatch({
+        tempo: 72 + Math.floor(Math.random() * 84),
+        thunder: 0.48 + Math.random() * 0.52,
+        saws: 0.5 + Math.random() * 0.5,
+        detune: 0.22 + Math.random() * 0.76,
+        drive: 0.25 + Math.random() * 0.7,
+        cutoff: 0.25 + Math.random() * 0.7,
+        resonance: 0.25 + Math.random() * 0.72,
+        filterEnv: 0.35 + Math.random() * 0.65,
+        atmosphere: 0.2 + Math.random() * 0.78,
+        mode: modes[Math.floor(Math.random() * modes.length)]
+      }, nextFilters);
+    });
+    exportButton.addEventListener("click", exportWav);
+
+    renderControls();
+    renderStepFilters();
+    renderNotes();
+    renderPresets();
+    applyParams();
+    canvasContext.fillStyle = "#080604";
+    canvasContext.fillRect(0, 0, canvas.width, canvas.height);
+    canvasContext.strokeStyle = "rgba(230,184,97,.32)";
+    canvasContext.beginPath();
+    canvasContext.moveTo(0, canvas.height / 2);
+    canvasContext.lineTo(canvas.width, canvas.height / 2);
+    canvasContext.stroke();
   </script>
 </body>
 </html>

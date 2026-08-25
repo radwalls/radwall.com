@@ -1,7 +1,11 @@
 const { test, expect } = require("@playwright/test");
+const fs = require("node:fs");
 
 test.describe("new project synths", () => {
-  for (const pageName of ["atrium-synth.html", "forgotten-oil-rigs-2-synth.html"]) {
+  for (const { pageName, rangeCount } of [
+    { pageName: "atrium-synth.html", rangeCount: 9 },
+    { pageName: "forgotten-oil-rigs-2-synth.html", rangeCount: 17 }
+  ]) {
     test(`${pageName} loads controls and can start`, async ({ page }) => {
       const errors = [];
       page.on("pageerror", (error) => errors.push(error.message));
@@ -14,19 +18,68 @@ test.describe("new project synths", () => {
       await expect(page.locator("#playButton")).toBeVisible();
       await expect(page.locator("#exportButton")).toBeVisible();
       await expect(page.locator("canvas")).toBeVisible();
-      await expect(page.locator("input[type='range']")).toHaveCount(9);
+      await expect(page.locator("input[type='range']")).toHaveCount(rangeCount);
       await expect(page.locator(".preset")).toHaveCount(4);
+      await expect(page.locator(".note")).toHaveCount(7);
+
+      const dockPosition = await page.locator("#playDock").evaluate(element =>
+        getComputedStyle(element).position
+      );
+      expect(dockPosition).toBe(page.viewportSize().width <= 700 ? "fixed" : "sticky");
+
       await page.locator("#randomButton").click();
       await page.locator("#playButton").click();
-      await page.waitForTimeout(250);
+      await expect(page.locator("#playButton")).toHaveClass(/is-playing/);
+      await page.waitForTimeout(450);
       await page.locator("#playButton").click();
-      const downloadPromise = page.waitForEvent("download", { timeout: 20000 });
+      await expect(page.locator("#playButton")).not.toHaveClass(/is-playing/);
+
+      const downloadPromise = page.waitForEvent("download", { timeout: 45000 });
       await page.locator("#exportButton").click();
       const download = await downloadPromise;
       expect(download.suggestedFilename()).toContain(".wav");
+      const downloadPath = await download.path();
+      const wav = fs.readFileSync(downloadPath);
+      expect(wav.subarray(0, 4).toString("ascii")).toBe("RIFF");
+      expect(wav.subarray(8, 12).toString("ascii")).toBe("WAVE");
+      expect(wav.byteLength).toBeGreaterThan(500000);
+      let sampledPeak = 0;
+      for (let offset = 44; offset < wav.byteLength - 1; offset += 200) {
+        sampledPeak = Math.max(sampledPeak, Math.abs(wav.readInt16LE(offset)));
+      }
+      expect(sampledPeak).toBeGreaterThan(300);
       expect(errors).toEqual([]);
     });
   }
+
+  test("Atrium strikes build to an audible shatter state", async ({ page }) => {
+    await page.goto("/atrium-synth.html");
+    await page.locator("#fracture").evaluate(element => {
+      element.value = "1";
+      element.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    await page.locator("#strikeButton").click();
+    await page.locator("#strikeButton").click();
+    await expect.poll(() => page.locator("body").getAttribute("data-shatter-count"))
+      .toBe("1");
+    await expect(page.locator("#readout")).toContainText("SHATTER");
+    await expect(page.locator("#fractureText")).toHaveText("0%");
+  });
+
+  test("Oil Rigs arp exposes and uses a separate filter for all eight steps", async ({ page }) => {
+    await page.goto("/forgotten-oil-rigs-2-synth.html");
+    const stepFilters = page.locator(".step-filter");
+    await expect(stepFilters).toHaveCount(8);
+    await stepFilters.nth(0).fill("0.12");
+    await stepFilters.nth(1).fill("0.91");
+    await expect(stepFilters.nth(0)).toHaveValue("0.12");
+    await expect(stepFilters.nth(1)).toHaveValue("0.91");
+    await page.locator("#playButton").click();
+    await expect.poll(() => page.locator("body").getAttribute("data-arp-step"))
+      .not.toBeNull();
+    await expect(page.locator(".step-filter-card.is-active")).toHaveCount(1);
+    await page.locator("#playButton").click();
+  });
 
   test("homepage hides each instrument behind its matching album artwork", async ({ page }) => {
     await page.goto("/");
