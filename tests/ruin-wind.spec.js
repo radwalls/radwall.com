@@ -32,6 +32,9 @@ test.describe("Ruin Wind", () => {
     await page.goto("/ruin-wind/");
     await expect(page).toHaveTitle(/Ruin Wind/);
     await expect(page.locator("h1")).toHaveText("Ruin Wind");
+    await expect(page.locator("body")).not.toContainText(/\bgenerative\b/i);
+    const document = await request.get("/ruin-wind/");
+    expect(await document.text()).not.toMatch(/\bgenerative\b/i);
     await expect(page.locator(".scene-button")).toHaveCount(4);
     await expect(page.locator("input[type='range']")).toHaveCount(7);
     await expect(page.locator("#howl")).toBeVisible();
