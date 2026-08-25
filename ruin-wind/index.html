@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0a0a09">
+  <title>Ruin Wind | Radwalls</title>
+  <meta name="description" content="A playable generative wind instrument for four worlds after the end.">
+  <meta property="og:title" content="Ruin Wind — Generative Atmosphere">
+  <meta property="og:description" content="Iron, glass, water and stone become weather.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://www.radwall.com/ruin-wind/">
+  <meta property="og:image" content="https://www.radwall.com/ruin-wind/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Ruin Wind — Generative Atmosphere">
+  <meta name="twitter:description" content="Iron, glass, water and stone become weather.">
+  <meta name="twitter:image" content="https://www.radwall.com/ruin-wind/og.png">
+  <link rel="stylesheet" href="styles.css">
+  <script src="wind.js" defer></script>
+</head>
+<body data-scene="0" data-audio="idle">
+  <div class="grain" aria-hidden="true"></div>
+  <div class="alignment" aria-hidden="true"><span></span><span></span><span></span></div>
+
+  <main class="instrument">
+    <header class="instrument-header">
+      <div>
+        <a class="home-link" href="../" aria-label="Return to radwall.com">← RADWALLS.COM</a>
+        <p class="eyebrow">GENERATIVE ATMOSPHERE / RW–04</p>
+        <h1>Ruin Wind</h1>
+      </div>
+      <div class="transport" aria-label="Audio transport">
+        <button id="playButton" class="power-button" type="button">
+          <span aria-hidden="true"></span><b>WAKE WIND</b>
+        </button>
+        <button id="captureButton" class="capture-button" type="button">
+          <span aria-hidden="true"></span><b>CAPTURE</b>
+        </button>
+      </div>
+    </header>
+
+    <div class="instrument-grid">
+      <nav class="scene-list" aria-label="Weather scenes">
+        <p class="section-label">WORLD INDEX</p>
+        <button class="scene-button active" data-scene="0" type="button" aria-pressed="true" aria-label="Select Iron Desert">
+          <span>I</span><strong>Iron Desert</strong>
+        </button>
+        <button class="scene-button" data-scene="1" type="button" aria-pressed="false" aria-label="Select Outside the Atrium">
+          <span>II</span><strong>Outside the Atrium</strong>
+        </button>
+        <button class="scene-button" data-scene="2" type="button" aria-pressed="false" aria-label="Select Red Coast">
+          <span>III</span><strong>Red Coast</strong>
+        </button>
+        <button class="scene-button" data-scene="3" type="button" aria-pressed="false" aria-label="Select Grey Earth">
+          <span>IV</span><strong>Grey Earth</strong>
+        </button>
+      </nav>
+
+      <section class="weather-stage" aria-labelledby="sceneName">
+        <div class="stage-topline"><span>LIVE WEATHER</span><span id="scenePlace">THE RIGS STILL REIGN</span></div>
+        <div class="weather-orb" aria-hidden="true"><div class="orb-core"></div><div class="orb-cut"></div></div>
+        <canvas id="windTrace" class="wind-trace" aria-hidden="true"></canvas>
+        <div class="scene-copy">
+          <p id="sceneNumber">SCENE I</p>
+          <h2 id="sceneName">Iron Desert</h2>
+          <span id="sceneNote">Hot pressure drags through derricks, pipework and oxidized wire.</span>
+        </div>
+        <button id="summonButton" class="summon-button" type="button" disabled><span>↗</span> SUMMON</button>
+      </section>
+
+      <aside class="control-bank" aria-label="Wind controls">
+        <div class="control-heading">
+          <p class="section-label">ATMOSPHERE</p>
+          <button id="driftButton" type="button">ALTER WEATHER</button>
+        </div>
+
+        <label class="control" for="force"><span>Force</span><output for="force">62</output><input id="force" data-parameter="force" type="range" min="0" max="1" step="0.01" value="0.62"><i>still</i><i>gale</i></label>
+        <label class="control" for="gust"><span>Breath</span><output for="gust">76</output><input id="gust" data-parameter="gust" type="range" min="0" max="1" step="0.01" value="0.76"><i>held</i><i>close</i></label>
+        <label class="control" for="tone"><span>Voice</span><output for="tone">27</output><input id="tone" data-parameter="tone" type="range" min="0" max="1" step="0.01" value="0.27"><i>earth</i><i>wire</i></label>
+        <label class="control" for="debris"><span>Matter</span><output for="debris">39</output><input id="debris" data-parameter="debris" type="range" min="0" max="1" step="0.01" value="0.39"><i>air</i><i>shrapnel</i></label>
+        <label class="control" for="pulse"><span>Pulse</span><output for="pulse">36</output><input id="pulse" data-parameter="pulse" type="range" min="0" max="1" step="0.01" value="0.36"><i>drift</i><i>ritual</i></label>
+        <label class="control" for="space"><span>Horizon</span><output for="space">58</output><input id="space" data-parameter="space" type="range" min="0" max="1" step="0.01" value="0.58"><i>skin</i><i>planet</i></label>
+        <label class="control" for="omen"><span>Presence</span><output for="omen">50</output><input id="omen" data-parameter="omen" type="range" min="0" max="1" step="0.01" value="0.50"><i>gaia</i><i>death</i></label>
+      </aside>
+    </div>
+
+    <footer class="instrument-footer">
+      <p id="statusMessage" role="status" aria-live="polite">SEALED</p>
+      <p>NO SAMPLES / PROCEDURAL STEREO</p>
+      <p><kbd>1–4</kbd> WORLDS · <kbd>SPACE</kbd> HOLD</p>
+    </footer>
+  </main>
+</body>
+</html>

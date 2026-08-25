@@ -8,10 +8,14 @@
         body { font-family: Arial, sans-serif; margin:0; padding:0; background-color:#1a1a1a; color:#fff; display:flex; justify-content:center; align-items:center; min-height:100vh; }
         .album-container, .ep-container { display:flex; flex-direction:column; gap:20px; align-items:center; width:100%; }
         .album-container { padding-top:34px; box-sizing:border-box; }
-        .arrival-line { position:relative; width:min(720px,86vw); padding:12px 0 18px; color:#535b5b; font-size:9px; letter-spacing:.34em; text-align:center; text-transform:uppercase; overflow:hidden; }
+        .arrival-line { position:relative; width:min(720px,86vw); min-height:44px; padding:12px 0 18px; box-sizing:border-box; color:#535b5b; font-size:9px; letter-spacing:.34em; text-align:center; text-transform:uppercase; overflow:hidden; }
         .arrival-line::before { content:''; position:absolute; left:0; right:0; bottom:4px; height:1px; background:linear-gradient(90deg,transparent,rgba(0,255,204,.12),rgba(120,150,150,.2),rgba(0,255,204,.12),transparent); }
         .arrival-line::after { content:''; position:absolute; bottom:2px; left:8%; width:3px; height:3px; border-radius:50%; background:#8aa; opacity:.22; box-shadow:78px -5px #788,164px 1px #6a8,252px -3px #899,361px 0 #587,477px -5px #788,590px 1px #6a8; animation:signalDrift 7s ease-in-out infinite alternate; }
         .arrival-line span { animation:signalPulse 5.5s ease-in-out infinite; }
+        .wind-signal-link { position:absolute; right:0; top:50%; display:grid; width:44px; height:44px; place-items:center; transform:translateY(-50%); border-radius:50%; text-decoration:none; -webkit-tap-highlight-color:transparent; }
+        .wind-signal-link::before { content:''; width:2px; height:15px; background:#7e3f28; box-shadow:0 0 8px rgba(198,107,54,.12); opacity:.34; transform:rotate(8deg); transition:height .2s ease, opacity .2s ease, box-shadow .2s ease; }
+        .wind-signal-link:hover::before, .wind-signal-link:focus-visible::before { height:23px; opacity:.95; box-shadow:0 0 13px rgba(198,107,54,.68); }
+        .wind-signal-link:focus-visible { outline:1px solid rgba(198,107,54,.6); outline-offset:2px; }
         @keyframes signalPulse { 0%,100%{opacity:.32} 48%{opacity:.68} 52%{opacity:.46} }
         @keyframes signalDrift { from{transform:translateX(-6px);filter:blur(.2px)} to{transform:translateX(9px);filter:blur(.6px)} }
         .album-row, .ep-row { display:flex; gap:20px; flex-wrap:wrap; justify-content:center; width:100%; }
@@ -283,7 +287,10 @@
 <body>
     <div id="particles-js"></div>
     <div class="album-container" id="album-container">
-        <div class="arrival-line" aria-label="Current transmission"><span>somewhere between the sand and the atrium</span></div>
+        <div class="arrival-line" aria-label="Current transmission">
+            <span>somewhere between the sand and the atrium</span>
+            <a class="wind-signal-link" href="ruin-wind/" aria-label="Open the Ruin Wind instrument" title="The wind remembers"></a>
+        </div>
         <div class="ep-row">
             <div class="ep-card" onclick="openAlbumPage('ep1','sand')"><img src="ep-roads-of-oil-cover.jpg" alt="Roads of Oil"></div>
         </div>
