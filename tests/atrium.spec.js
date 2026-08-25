@@ -66,10 +66,25 @@ test.describe("Atrium deployment", () => {
     expect(consoleErrors).toEqual([]);
   });
 
-  test("homepage keeps Atrium hidden", async ({ page }) => {
+  test("homepage keeps the Atrium game hidden and exposes only its secret album signal", async ({ page }) => {
     const response = await page.goto("/", { waitUntil: "domcontentloaded" });
     expect(response?.ok()).toBeTruthy();
-    await expect(page.locator('a[href*="atrium"]')).toHaveCount(0);
+
+    const atriumLinks = page.locator('a[href*="atrium"]');
+    await expect(atriumLinks).toHaveCount(1);
+
+    const secretSignal = page.locator(
+      '#album4 a.secret-signal-link[href="atrium-synth.html"]'
+    );
+    await expect(secretSignal).toHaveCount(1);
+    await expect(secretSignal).not.toBeVisible();
+    await expect(secretSignal).not.toContainText(/synth/i);
+
+    await expect(
+      page.locator(
+        'a[href="/atrium"], a[href="/atrium/"], a[href="/atrium/index.html"]'
+      )
+    ).toHaveCount(0);
   });
 
   test("playtest fixes are present in the deployed game bundle", async ({
