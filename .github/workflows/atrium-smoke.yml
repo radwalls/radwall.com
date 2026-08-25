@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - "atrium/**"
+      - "ruin-wind/**"
+      - "index.html"
       - "CNAME"
       - "grey-red-synth.html"
       - "supabase-synth-presets.sql"
@@ -17,6 +19,8 @@ on:
       - main
     paths:
       - "atrium/**"
+      - "ruin-wind/**"
+      - "index.html"
       - "CNAME"
       - "grey-red-synth.html"
       - "supabase-synth-presets.sql"
@@ -67,13 +71,13 @@ jobs:
         shell: bash
         run: |
           for attempt in {1..20}; do
-            if curl --fail --silent --location https://www.radwall.com/atrium/ \
-              | grep --quiet '<title>The Atrium</title>'; then
+            if curl --fail --silent --location https://www.radwall.com/ruin-wind/ \
+              | grep --quiet '<title>Ruin Wind | Radwalls</title>'; then
               exit 0
             fi
             sleep 15
           done
-          echo "Atrium did not become available within five minutes."
+          echo "Ruin Wind did not become available within five minutes."
           exit 1
       - name: Test live deployment
         run: npm test
