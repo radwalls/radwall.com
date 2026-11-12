@@ -24,6 +24,18 @@
         .album, .ep-card { width:150px; height:150px; background-color:#333; border-radius:5px; position:relative; cursor:pointer; }
         .album:hover::after, .ep-card:hover::after { content:''; position:absolute; top:-5px; left:-5px; right:-5px; bottom:-5px; border:2px solid #00ffcc; border-radius:5px; animation:glow 1s infinite alternate; }
         @keyframes glow { from { box-shadow:0 0 10px #00ffcc; } to { box-shadow:0 0 20px #00ffcc; } }
+        .ambience-card {
+            display: grid;
+            place-items: center;
+            box-sizing: border-box;
+            padding: 14px;
+            border: 1px solid #00ffcc;
+            background: #111;
+            color: #fff;
+            font: inherit;
+            text-align: center;
+        }
+        .ambience-card:focus-visible { outline: 2px solid #00ffcc; outline-offset: 5px; }
         .album img, .ep-card img { width:100%; height:100%; object-fit:cover; border-radius:5px; }
         .black-and-white img { filter:grayscale(100%); transition:filter 0.3s ease-in-out; }
         .black-and-white:hover img { filter:grayscale(0%); }
@@ -293,6 +305,10 @@
         </div>
         <div class="ep-row">
             <div class="ep-card" onclick="openAlbumPage('ep1','sand')"><img src="ep-roads-of-oil-cover.jpg" alt="Roads of Oil"></div>
+            <button type="button" class="ep-card ambience-card"
+                onclick="openAlbumPage('radwalls-ambience', 'none', 'linear-gradient(#111, #050505)')">
+                Radwalls Ambience
+            </button>
         </div>
  <div class="divider"></div>
         <div class="coaching-section">
@@ -342,6 +358,13 @@
 
 
     <!-- Album Pages -->
+    <div id="radwalls-ambience" class="album-page">
+        <h1>Radwalls Ambience</h1>
+        <p class="album-info">Interconnections of Space and Time</p>
+        <a href="https://www.youtube.com/@radwallsambience" class="buy-button">Radwalls Ambience on YouTube</a>
+        <button type="button" class="back-button" onclick="closeAlbumPage('radwalls-ambience')">Back</button>
+    </div>
+
     <div id="album1" class="album-page">
         <h1>Sleep</h1>
         <p class="album-info">Sleep was created 2010–2011 through long nights of insomnia. Rad experimented with reamping guitars and sampling choirs, mastered overnight with Spencer Roberts, released October 7, 2011, with photography by Mike Cuffe.</p>
