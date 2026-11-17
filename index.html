@@ -361,8 +361,15 @@
     <!-- Album Pages -->
     <div id="radwalls-ambience" class="album-page">
         <h1>Radwalls Ambience</h1>
+        <template data-ambience-launch="2026-11-17T17:00:00Z">
+            <h2>Repowered Armament</h2>
+            <img src="ambience/repowered-armament.jpg" width="960" height="960"
+                style="width:min(75vw, 320px); height:auto" alt="Lightning illuminates a mech in the rain">
+            <a href="https://ryanwall.bandcamp.com/track/repowered-armament" class="buy-button">Listen on Bandcamp</a>
+            <a href="https://youtu.be/tGYa1suCn9A" class="buy-button">Watch on YouTube</a>
+        </template>
         <h2>Interconnections of Space and Time</h2>
-        <template id="ambience-release" data-launch="2026-11-12T17:00:00Z">
+        <template data-ambience-launch="2026-11-12T17:00:00Z">
             <img src="ambience/interconnections.jpg" width="960" height="960"
                 style="width:min(75vw, 320px); height:auto" alt="Mosaic of metal, stone, and painted textures">
             <p class="album-info">Dedicated to one of my first viewers on my Twitch stream</p>
@@ -374,9 +381,8 @@
     </div>
 
     <script>
-        (() => {
-            const release = document.getElementById('ambience-release');
-            const launch = Date.parse(release.dataset.launch);
+        document.querySelectorAll('template[data-ambience-launch]').forEach(release => {
+            const launch = Date.parse(release.dataset.ambienceLaunch);
 
             function revealRelease() {
                 const remaining = launch - Date.now();
@@ -389,7 +395,7 @@
             }
 
             revealRelease();
-        })();
+        });
     </script>
 
     <div id="album1" class="album-page">
