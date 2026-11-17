@@ -78,6 +78,43 @@
 }
 
         .album-page.active { display:flex; }
+        .ambience-releases {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            align-items: start;
+            gap: 20px;
+            width: min(100%, 660px);
+        }
+        .ambience-release summary {
+            position: relative;
+            display: grid;
+            aspect-ratio: 1;
+            overflow: hidden;
+            border: 1px solid #444;
+            border-radius: 5px;
+            cursor: pointer;
+            list-style: none;
+        }
+        .ambience-release summary::-webkit-details-marker { display: none; }
+        .ambience-release summary:hover,
+        .ambience-release summary:focus-visible,
+        .ambience-release[open] summary { border-color: #0787ff; }
+        .ambience-release summary img { width: 100%; height: 100%; object-fit: cover; }
+        .ambience-release summary span {
+            position: absolute;
+            inset: auto 0 0;
+            padding: 22px 8px 10px;
+            background: linear-gradient(transparent, rgba(0, 0, 0, .9));
+            color: #fff;
+        }
+        .ambience-release .album-info { margin: 12px 0 0; }
+        .ambience-release .album-info p:first-child { margin-top: 0; }
+        .ambience-release .album-info p:last-child { margin-bottom: 0; }
+        .ambience-release .buy-button { display: inline-block; margin: 10px 3px 0; }
+        @media (max-width: 520px) {
+            .ambience-releases { grid-template-columns: minmax(0, 320px); justify-content: center; }
+        }
+
         .album-info {
             margin-top: 20px;
             max-width: 600px;
@@ -361,22 +398,36 @@
     <!-- Album Pages -->
     <div id="radwalls-ambience" class="album-page">
         <h1>Radwalls Ambience</h1>
-        <template data-ambience-launch="2026-11-17T17:00:00Z">
-            <h2>Repowered Armament</h2>
-            <img src="ambience/repowered-armament.jpg" width="960" height="960"
-                style="width:min(75vw, 320px); height:auto" alt="Lightning illuminates a mech in the rain">
-            <a href="https://ryanwall.bandcamp.com/track/repowered-armament" class="buy-button">Listen on Bandcamp</a>
-            <a href="https://youtu.be/tGYa1suCn9A" class="buy-button">Watch on YouTube</a>
-        </template>
-        <h2>Interconnections of Space and Time</h2>
-        <template data-ambience-launch="2026-11-12T17:00:00Z">
-            <img src="ambience/interconnections.jpg" width="960" height="960"
-                style="width:min(75vw, 320px); height:auto" alt="Mosaic of metal, stone, and painted textures">
-            <p class="album-info">Dedicated to one of my first viewers on my Twitch stream</p>
-            <a href="https://ryanwall.bandcamp.com/track/interconnections-of-space-and-time" class="buy-button">Listen on Bandcamp</a>
-            <a href="https://youtu.be/Ehz5ZOw2kBQ" class="buy-button">Watch on YouTube</a>
-            <a href="https://distrokid.com/hyperfollow/rads2/interconnections-of-space-and-time" class="buy-button">Streaming links</a>
-        </template>
+        <div class="ambience-releases">
+            <template data-ambience-launch="2026-11-12T17:00:00Z">
+                <details class="ambience-release">
+                    <summary>
+                        <img src="ambience/interconnections.jpg" width="960" height="960" alt="">
+                        <span>Interconnections of Space and Time</span>
+                    </summary>
+                    <p class="album-info">Dedicated to one of my first viewers on my Twitch stream</p>
+                    <a href="https://ryanwall.bandcamp.com/track/interconnections-of-space-and-time" class="buy-button">Listen on Bandcamp</a>
+                    <a href="https://youtu.be/Ehz5ZOw2kBQ" class="buy-button">Watch on YouTube</a>
+                    <a href="https://distrokid.com/hyperfollow/rads2/interconnections-of-space-and-time" class="buy-button">Streaming links</a>
+                </details>
+            </template>
+            <template data-ambience-launch="2026-11-17T17:00:00Z">
+                <details class="ambience-release">
+                    <summary>
+                        <img src="ambience/repowered-armament.jpg" width="960" height="960" alt="">
+                        <span>Repowered Armament</span>
+                    </summary>
+                    <div class="album-info">
+                        <p>Some say the forgotten machines of Greyearth will someday start up again on their own. But what forces could bring them back to life?</p>
+                        <p>I made this song with my Ibanez six-string through an Axe-Fx II and mixed it in Logic Pro X. The song was not generated with AI. I made the mech-in-the-rain scene in Blender, created the captions in Apple Motion, and edited the video in Final Cut Pro.</p>
+                        <p>Radwalls Ambience on radwall.com</p>
+                        <p>radwalls ambience (R)</p>
+                    </div>
+                    <a href="https://ryanwall.bandcamp.com/track/repowered-armament" class="buy-button">Listen on Bandcamp</a>
+                    <a href="https://youtu.be/tGYa1suCn9A" class="buy-button">Watch on YouTube</a>
+                </details>
+            </template>
+        </div>
         <button type="button" class="back-button" onclick="location.hash = ''">Back</button>
     </div>
 
